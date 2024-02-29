@@ -1,0 +1,102 @@
+##### Import packges
+import numpy as np
+import pandas as pd
+import glob,os
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def rename_func(data_pd, col, na, new_na):
+    pd_new = data_pd
+    list_col = data_pd[col].to_list()
+    for i in range(len(list_col)):
+        if list_col[i] == na:
+            list_col[i] = new_na
+    pd_new = pd_new.drop(columns=col)
+    pd_new[col] = list_col
+
+    return pd_new
+
+def box_plot_vert(dict_df, mol_name, ID, title, lim):
+    # Create new plot
+    fig, ax = plt.subplots(figsize=(15, 8))
+    # YlGnBu
+    states_palette = sns.color_palette("seismic", n_colors=4)
+    my_pal = {"Model offline OMF": "skyblue",
+              "ECHAM-HAM aerosol concentration": "pink",
+              "Observation OMF": "royalblue",
+              "Observation aerosol concentration": "palevioletred"}
+    # Plot with seaborn
+    bx = sns.boxplot(data=dict_df, x="Measurements",
+                     y="Aerosol OMF & Concentration (µg m$^{-3}$)", hue="",
+                     palette=my_pal,
+                     width=.7)
+    # The box shows the quartiles of the
+    # dataset while the whiskers extend to
+    # show the rest of the distribution,
+    # except for points that are determined
+    # to be “outliers” using a method that
+    # is a function of the inter-quartile range.
+
+    ax.text(0.1, 4, mol_name[0], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+    ax.text(3.2, 4, mol_name[1], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+    ax.text(5.6, 2, mol_name[2], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+    ax.text(7, 4, mol_name[3], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+
+    # plot_text(dict_macrom[0], ax, ID[0], 0.1, 2, 50, 'PCHO')
+    # plot_text(dict_macrom[1], ax, ID[1], 5, 7, 50, 'DCAA')
+    # # plot_text(dict_macrom[2], ax, ID[2], 10, 9.6, 20, 'PL')
+
+    # Customizing axes
+    ax.tick_params(axis='both', labelsize='14')
+    ax.yaxis.get_label().set_fontsize(14)
+    ax.set_xlabel('', fontsize=14)
+    ax.set_yscale('log')
+    ax.grid(linestyle='--', linewidth=0.4)
+    ax.set_ylim(lim)
+
+    # dotted lines to separate groups
+    ax.axvline(2.5, color=".3", dashes=(2, 2))
+    ax.axvline(5.5, color=".3", dashes=(2, 2))
+    ax.axvline(6.55, color=".3", dashes=(2, 2))
+
+    plt.legend(loc="lower right", fontsize='14')  # bbox_to_anchor=(1.04, 1),
+
+    plt.savefig( f'plots/mixed_omf_conc_{title}_box.png', dpi=300, bbox_inches="tight")
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    # data paths
+    data_dir = "pd_files/"
+
+    try:
+        os.mkdir('plots')
+    except OSError:
+
+        pass
+
+
+
+    var = ['poly', 'prot', 'lipi','tot']
+    mac_names = ['PCHO|CCHO', 'DCAA|DFAA', 'PL|\n(PG+FFA)', '(PCHO+DCAA+PL)|OC']
+    mix_omf_conc = []
+    for v in var:
+        omf = pd.read_pickle(f'{data_dir}{v}_omf.pkl')
+        omf_rename = rename_func(omf,'', 'Model', 'Model offline OMF')
+        omf_rename = rename_func(omf_rename, '', 'Observation', 'Observation OMF')
+        omf_rename = omf_rename.rename(columns={'Aerosol OMF':
+                                                      'Aerosol OMF & Concentration (µg m$^{-3}$)'})
+
+
+        conc = pd.read_pickle(f'{data_dir}{v}_conc.pkl')
+        conc_rename = rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
+        conc_rename = rename_func(conc_rename, '', 'Observation', 'Observation aerosol concentration')
+        conc_rename = conc_rename.rename(columns={'Aerosol Concentration (µg m$^{-3}$)':
+                                                      'Aerosol OMF & Concentration (µg m$^{-3}$)'})#'Aerosol Concentration (µg m$^{-3}$)
+
+        mix = pd.concat([omf_rename, conc_rename])
+        mix_omf_conc.append(mix)
+
+    box_plot_vert(pd.concat([mix_omf_conc[0], mix_omf_conc[1],
+                             mix_omf_conc[2], mix_omf_conc[3]]),
+                             mac_names, ['pol', 'pro', 'lip'],
+                             'All_groups', [1e-6, 1e1])
