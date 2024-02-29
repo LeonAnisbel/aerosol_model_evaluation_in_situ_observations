@@ -267,8 +267,8 @@ def equat_stat(model, observ):
     nmb = bias / obs_mean
 
     # Normalised Mean Standard Deviation (NMSD)
-    std_obs = np.std(observ)#np.sqrt(sum((observ - obs_mean) ** 2) / len(observ))
-    std_mod = np.std(model)#np.sqrt(sum((model - mod_mean) ** 2) / len(model))
+    std_obs = np.std(observ)
+    std_mod = np.std(model)
     nmsd = (std_mod - std_obs) / std_obs
 
     return rmse, corrcoef, nmb, nmsd
@@ -385,7 +385,7 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
 
     plt.legend(loc="lower left", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 
-    plt.savefig( f'plots/all_test_{title}_box.png', dpi=300, bbox_inches="tight")
+    plt.savefig( f'plots/all_final_conc_{title}_box.png', dpi=300, bbox_inches="tight")
 
 
 

@@ -1,7 +1,7 @@
 import xarray as xr
 import glob, os
 from matplotlib import cm
-import interp_func
+import mod_interp_obs_concat
 import plot_functions
 import numpy as np
 import codecs

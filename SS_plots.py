@@ -59,7 +59,7 @@ def plot_fit(conc_mod_obs, obs_col_na,mod_col_na,title,xli,yli,loc):
     ax.grid(linestyle='--', linewidth=0.4)
     fig.tight_layout()
 
-    plt.savefig(f'plots/marginal_SS_conc_{title}_box.png')
+    plt.savefig(f'plots/SS_conc_{title}_box.png')
     plt.close()
 
 def transform_pd(conc, old_cols, obs_col, mod_col):
