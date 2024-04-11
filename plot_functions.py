@@ -9,14 +9,14 @@ import seaborn as sns
 from sklearn.metrics import mean_squared_error
 import matplotlib.path as mpath
 
+
 def function_plot_mult(x, y, z_pol, z_pro, z_lip, ICE, label, title):
     # Define the figure and each axis for the 3 rows and 3 columns
     fig, axs = plt.subplots(nrows=1, ncols=3,
                             subplot_kw={'projection': ccrs.NorthPolarStereo()},  # Robinson
                             figsize=(12, 6))
 
-    clevs = np.array([0,0.001,0.005,0.05, 0.1, 0.5, 1, 2,3,5,7])
-
+    clevs = np.array([0, 0.001, 0.005, 0.05, 0.1, 0.5, 1, 2, 3, 5, 7])
 
     for i in range(len(axs)):
         axs[i].set_extent([-180, 180, 50, 90], ccrs.PlateCarree())
@@ -83,10 +83,10 @@ def function_plot_mult(x, y, z_pol, z_pro, z_lip, ICE, label, title):
     # Add a colorbar axis at the bottom of the graph
     cbar_ax = fig.add_axes([0.4, 0.07, 0.3, 0.01])
     #Draw the colorbar
-    ic_bar=fig.colorbar(ic, extendfrac='auto',shrink=0.6,
-                      cax=cbar_ax,orientation='horizontal')
-    ic_bar.set_label('Sea ice cover (%)',fontsize = '12')
-    labels = np.arange(20,100,15)
+    ic_bar = fig.colorbar(ic, extendfrac='auto', shrink=0.6,
+                          cax=cbar_ax, orientation='horizontal')
+    ic_bar.set_label('Sea ice cover (%)', fontsize='12')
+    labels = np.arange(20, 100, 15)
     ic_bar.set_ticklabels(labels)
     #
 
@@ -95,31 +95,30 @@ def function_plot_mult(x, y, z_pol, z_pro, z_lip, ICE, label, title):
     plt.show()
 
 
-def plot_map_mean(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = True,total = True):
+def plot_map_mean(C, name, id_var, step, ma, outdir_polts, factor, unit, cmap, poles=True, total=True):
     if poles:
         fig, ax = plt.subplots(1, 1,  # define figure with cartopy
-                                 subplot_kw={'projection': ccrs.NorthPolarStereo()}, figsize=(5, 6))
+                               subplot_kw={'projection': ccrs.NorthPolarStereo()}, figsize=(5, 6))
         ax.set_extent([-180, 180, 50, 90], ccrs.PlateCarree())
     else:
         fig, ax = plt.subplots(1, 1,  # define figure with cartopy
-                                 subplot_kw={'projection': ccrs.Robinson()}, figsize=(5, 6))
+                               subplot_kw={'projection': ccrs.Robinson()}, figsize=(5, 6))
 
     fig.suptitle(name, fontsize=20)
 
-    Z = (C[id_var[0]] + C[id_var[1]]+ C[id_var[2]])/ factor
+    Z = (C[id_var[0]] + C[id_var[1]] + C[id_var[2]]) / factor
     id_var_a = id_var
     Z_da = np.ma.masked_where(Z <= 0, Z)
 
     levels = np.linspace(0.0, ma, 20)
-    im = ax.contourf(Z.lon, Z.lat,Z_da,levels = levels,extend = 'max',
-                              cmap = cmap, transform=ccrs.PlateCarree())  # , levels=np.arange(-10,10.1, 0.1))
+    im = ax.contourf(Z.lon, Z.lat, Z_da, levels=levels, extend='max',
+                     cmap=cmap, transform=ccrs.PlateCarree())  # , levels=np.arange(-10,10.1, 0.1))
     ax.add_feature(
         cart.feature.NaturalEarthFeature('physical', 'land', '50m', edgecolor='face', facecolor='lightgray'))
     ax.coastlines()
     ax.gridlines()
 
-
-    if ma >= 6 :
+    if ma >= 6:
         fmt = lambda x, pos: '{:.0f}'.format(x)
     if ma < 6 and ma >= 1:
         fmt = lambda x, pos: '{:.1f}'.format(x)
@@ -128,17 +127,15 @@ def plot_map_mean(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles 
 
     if ma >= 0.05 and ma <= 0.9: fmt = lambda x, pos: '{:.2f}'.format(x)
 
-    cbar = fig.colorbar(im ,format=FuncFormatter(fmt), orientation="horizontal", label=unit)
-    cbar.set_label(unit,fontsize = '16')
-    cbar.ax.tick_params(rotation = 45)
+    cbar = fig.colorbar(im, format=FuncFormatter(fmt), orientation="horizontal", label=unit)
+    cbar.set_label(unit, fontsize='16')
+    cbar.ax.tick_params(rotation=45)
 
     plt.savefig(outdir_polts + name + '_mean.png', dpi=300, bbox_inches="tight")
     plt.show()
 
 
-
-
-def plot_map(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = True,total = True):
+def plot_map(C, name, id_var, step, ma, outdir_polts, factor, unit, cmap, poles=True, total=True):
     if poles:
         fig, axes = plt.subplots(4, 1,  # define figure with cartopy
                                  subplot_kw={'projection': ccrs.NorthPolarStereo()}, figsize=(5, 12))
@@ -156,15 +153,13 @@ def plot_map(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = Tru
     months = [1, 4, 8, 10]
     titles = ['February', 'May', 'September', 'November']
 
-
     for idx, var in enumerate(months):
         if total:
-            Z = (C[var][id_var[0]] + C[var][id_var[1]]+ C[var][id_var[2]])/ factor
+            Z = (C[var][id_var[0]] + C[var][id_var[1]] + C[var][id_var[2]]) / factor
             id_var_a = id_var[0][:3]
         else:
-            Z = C[var][id_var]/factor
+            Z = C[var][id_var] / factor
             id_var_a = id_var
-
 
         Z_da = np.ma.masked_where(Z <= 0, Z)
         # Z_ma = ma
@@ -172,8 +167,8 @@ def plot_map(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = Tru
 
         # np.logspace(np.log10(Z_mi), np.log10(Z_ma), 30),locator=ticker.LogLocator()
         levels = np.linspace(0.0, ma, 20)
-        im = axflat[idx].contourf(Z.lon, Z.lat,Z_da,levels = levels,extend = 'max',
-                                  cmap = cmap, transform=ccrs.PlateCarree())  # , levels=np.arange(-10,10.1, 0.1))
+        im = axflat[idx].contourf(Z.lon, Z.lat, Z_da, levels=levels, extend='max',
+                                  cmap=cmap, transform=ccrs.PlateCarree())  # , levels=np.arange(-10,10.1, 0.1))
         axflat[idx].set_title(titles[idx], fontsize='14')
         axflat[idx].add_feature(
             cart.feature.NaturalEarthFeature('physical', 'land', '50m', edgecolor='face', facecolor='lightgray'))
@@ -182,7 +177,7 @@ def plot_map(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = Tru
 
     cbar_ax = fig.add_axes([0.1, -0.05, 0.8, 0.03])
 
-    if ma >= 6 :
+    if ma >= 6:
         fmt = lambda x, pos: '{:.0f}'.format(x)
     if ma < 6 and ma >= 1:
         fmt = lambda x, pos: '{:.1f}'.format(x)
@@ -191,11 +186,11 @@ def plot_map(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = Tru
 
     if ma >= 0.05 and ma <= 0.9: fmt = lambda x, pos: '{:.2f}'.format(x)
 
-    cbar = fig.colorbar(im ,format=FuncFormatter(fmt), cax=cbar_ax, orientation="horizontal", label=unit)
+    cbar = fig.colorbar(im, format=FuncFormatter(fmt), cax=cbar_ax, orientation="horizontal", label=unit)
     # step = ma/10
     # clevs = [x for x in np.arange(0, ma + step, step)]
-    cbar.set_label(unit,fontsize = '16')
-    cbar.ax.tick_params(rotation = 45)
+    cbar.set_label(unit, fontsize='16')
+    cbar.ax.tick_params(rotation=45)
     #cbar.locator = ticker.LogLocator()
     # cbar.set_ticks(cbar.locator.tick_values(Z_mi, Z_ma))
     # cbar.minorticks_off()
@@ -204,8 +199,7 @@ def plot_map(C, name, id_var, step,ma,outdir_polts, factor,unit,cmap,poles = Tru
     plt.show()
 
 
-
-def box_plot(data_pd,plot_dir,yaxis,title,name):
+def box_plot(data_pd, plot_dir, yaxis, title, name):
     # box plot using seaborn
     fig, ax = plt.subplots(1, 1, figsize=(9, 8))  # creating figure
     # The box shows the quartiles of the dataset while the whiskers extend to show the rest of the distribution,
@@ -226,7 +220,7 @@ def box_plot(data_pd,plot_dir,yaxis,title,name):
     plt.show()
 
 
-def box_plot_lip(new_pd_pl,plot_dir):
+def box_plot_lip(new_pd_pl, plot_dir):
     # box plot using seaborn
     import matplotlib.ticker as ticker
 
@@ -252,6 +246,7 @@ def box_plot_lip(new_pd_pl,plot_dir):
     ax.set_title('Aerosol concentration (Proteins and Lipids) over CVAO', fontsize='16')
     plt.savefig(plot_dir + 'Pro_Lip_omf_box.png', dpi=300)
 
+
 # Statistical indicators
 def equat_stat(model, observ):
     # Root Mean Squared Error
@@ -272,6 +267,7 @@ def equat_stat(model, observ):
     nmsd = (std_mod - std_obs) / std_obs
 
     return rmse, corrcoef, nmb, nmsd
+
 
 def stat(da, id_mod, id_obs):
     rmse_val = []
@@ -306,9 +302,7 @@ def stat(da, id_mod, id_obs):
     return rmse_val, corrcoef, nmb_val, nmsd_val, stat_all
 
 
-
-def box_plot_stat(dict_df, dict_macrom, ID, title, lim,yaxis,plot_dir,loc_high,loc_left):
-
+def box_plot_stat(dict_df, dict_macrom, ID, title, lim, yaxis, plot_dir, loc_high, loc_left):
     # Create new plot
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -342,7 +336,6 @@ def box_plot_stat(dict_df, dict_macrom, ID, title, lim,yaxis,plot_dir,loc_high,l
     # plt.legend(loc="lower right", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 
     plt.savefig(plot_dir + f'{title}_{ID}_box.png', dpi=300)
-
 
 
 def box_plot_vert(dict_df, mol_name, ID, title, lim):
@@ -380,12 +373,9 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
 
     # dotted lines to separate groups
     ax.axvline(2.5, color=".3", dashes=(2, 2))
-    ax.axvline(5.5, color=".3", dashes=(2, 2))
     ax.axvline(6.5, color=".3", dashes=(2, 2))
+    ax.axvline(7.5, color=".3", dashes=(2, 2))
 
     plt.legend(loc="lower left", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 
-    plt.savefig( f'plots/all_final_conc_{title}_box.png', dpi=300, bbox_inches="tight")
-
-
-
+    plt.savefig(f'plots/all_final_conc_{title}_box.png', dpi=300, bbox_inches="tight")

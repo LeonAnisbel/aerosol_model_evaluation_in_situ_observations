@@ -6,10 +6,12 @@ import xarray as xr
 import utils_func
 import global_vars
 
-def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
-    def datetime_to_integer(dt_time):
-        return pd.to_datetime(dt_time).astype(int) / 10 ** 9  # 10000*dt_time.year + 100*dt_time.month + dt_time.day
 
+def datetime_to_integer(dt_time):
+    return pd.to_datetime(dt_time).astype(int) * 1e9  # 10000*dt_time.year + 100*dt_time.month + dt_time.day
+
+
+def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     time_loc = datetime_to_integer(ds_btw['Date/Time'])  # convert datetime to int
     mo_loc = ds_btw['Date/Time'].dt.month.values  # list with months
 
@@ -18,19 +20,18 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
     mo_start = ds_lim['Start Date/Time'].dt.month.values  # list with months
     yr_start = ds_lim['Start Date/Time'].dt.year.values  # list with months
 
-
     time_var_end = datetime_to_integer(ds_lim['End Date/Time'])  # convert datetime to int
     mo_end = ds_lim['End Date/Time'].dt.month.values  # list with months
 
     start_4_mod, end_4_mod = [], []
     conc_model_pol, conc_model_pro, conc_model_lip = [], [], []
-    conc_model_ss, conc_model_ss_tot , conc_model_tot = [], [], []
+    conc_model_ss, conc_model_ss_tot, conc_model_tot = [], [], []
 
     conc_obs_pol_sub, conc_obs_tot_sub = [], []
     conc_obs_pol_sup, conc_obs_tot_sup = [], []
 
-    conc_obs_pol, conc_obs_pro, conc_obs_lip =  [], [], []
-    conc_obs_ss,conc_obs_ss_tot, conc_obs_tot = [], [], []
+    conc_obs_pol, conc_obs_pro, conc_obs_lip = [], [], []
+    conc_obs_ss, conc_obs_ss_tot, conc_obs_tot = [], [], []
     name_lip, name_pro = [], []
     id_camp = []
 
@@ -54,7 +55,7 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
                 lat_btw.append(ds_btw['Latitude'].values[l])
                 lon_btw.append(ds_btw['Longitude'].values[l])
 
-        mod_data,mod_ro_da = utils_func.read_model(path, exp,da_start[i],mo_start[i], yr_start[i],'tracer')
+        mod_data, mod_ro_da = utils_func.read_model(path, exp, da_start[i], mo_start[i], yr_start[i], 'tracer')
         print('interpolation data in process for ship trajectories')
 
         if len(lat_btw) > 1:
@@ -89,7 +90,7 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
 
             start_lo = ds_lim['Start Longitude'].values[i] % 360
             start_la = ds_lim['Start Latitude'].values[i]
-            mi_ma_lon, mi_ma_lat = [start_lo,start_lo], [start_la,start_la]
+            mi_ma_lon, mi_ma_lat = [start_lo, start_lo], [start_la, start_la]
 
             interp_vars = utils_func.start_interp(mod_data, mod_ro_da, global_vars.variables_names,
                                                   start_lo, start_la, mi_ma_lon,
@@ -102,8 +103,8 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
 
             end_lo = ds_lim['End Longitude'].values[i] % 360
             end_la = ds_lim['End Latitude'].values[i]
-            mi_ma_lon, mi_ma_lat = [end_lo,end_lo], [end_la,end_la]
-            
+            mi_ma_lon, mi_ma_lat = [end_lo, end_lo], [end_la, end_la]
+
             interp_vars = utils_func.start_interp(mod_data, mod_ro_da, global_vars.variables_names,
                                                   end_lo, end_la, mi_ma_lon,
                                                   mi_ma_lat)
@@ -139,7 +140,6 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
         interp_lim_start_ss = sum(conc_mod_ss) / len(conc_mod_ss)
         interp_lim_start_ss_tot = sum(conc_mod_ss_tot) / len(conc_mod_ss_tot)
 
-
         conc_model_pol.append(interp_lim_start_pol)
         conc_model_pro.append(interp_lim_start_pro)
         conc_model_lip.append(interp_lim_start_lip)
@@ -147,8 +147,8 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
         conc_model_ss_tot.append(interp_lim_start_ss_tot)
 
         conc_model_tot.append(interp_lim_start_pol +
-                             interp_lim_start_pro +
-                             interp_lim_start_lip)
+                              interp_lim_start_pro +
+                              interp_lim_start_lip)
 
         name_pro.append('DCAA   DFAA')
         name_lip.append('Lipids  FFA_PG')
@@ -157,13 +157,14 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
 
     # create new dataframe to store the data after filtering all lat, lons and Date/Time
     pd_da = pd.DataFrame({'ID': id_camp, 'Start Date/Time': start_4_mod, 'End Date/Time': end_4_mod,
-                          'conc_mod_poly': conc_model_pol, 'conc_mod_pro': conc_model_pro, 'conc_mod_lip': conc_model_lip,
+                          'conc_mod_poly': conc_model_pol, 'conc_mod_pro': conc_model_pro,
+                          'conc_mod_lip': conc_model_lip,
                           'conc_obs_poly_sub': conc_obs_pol_sub, 'conc_obs_prot_sub': conc_obs_pro,
                           'conc_obs_lipi_sub': conc_obs_lip,
-                          'conc_obs_tot_sub': conc_obs_tot_sub,'conc_mod_tot': conc_model_tot,
-                          'conc_obs_ss': conc_obs_ss,'conc_mod_ss': conc_model_ss,
+                          'conc_obs_tot_sub': conc_obs_tot_sub, 'conc_mod_tot': conc_model_tot,
+                          'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
                           'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot,
-                          'Name_pro':name_pro,'Name_lip':name_lip})
+                          'Name_pro': name_pro, 'Name_lip': name_lip})
 
     pd_da['Start Date/Time'] = pd_da['Start Date/Time'].apply(pd.to_datetime)
     pd_da['End Date/Time'] = pd_da['End Date/Time'].apply(pd.to_datetime)
@@ -172,20 +173,19 @@ def assign_loc_ship(path, exp,ds_btw,ds_sub,ds_lim,ID):
 
 
 # interpolation function
-def interp_conc_stations(path, exp,obs,obs_tot, ID):
-
+def interp_conc_stations(path, exp, obs, obs_tot, ID):
     start_4_mod, end_4_mod = [], []
     id_camp = []
-    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot,conc_model_ss,conc_model_ss_tot = [], [], [], [],[], []
-    conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot,conc_obs_ss,conc_obs_ss_tot = [], [], [], [], [],[]
+    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot, conc_model_ss, conc_model_ss_tot = [], [], [], [], [], []
+    conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot, conc_obs_ss, conc_obs_ss_tot = [], [], [], [], [], []
     name_lip, name_pro = [], []
     months = obs['Start Date/Time'].dt.month.values
     years = obs['Start Date/Time'].dt.year.values
     days = obs['Start Date/Time'].dt.day.values
 
     for m, mo in enumerate(months):
-        lat, lon = obs['Start Latitude'].values[0], obs['Start Longitude'].values[0]% 360
-        mod_data,mod_ro_da = utils_func.read_model(path, exp, days[m], mo, years[m],'tracer')
+        lat, lon = obs['Start Latitude'].values[0], obs['Start Longitude'].values[0] % 360
+        mod_data, mod_ro_da = utils_func.read_model(path, exp, days[m], mo, years[m], 'tracer')
 
         mi_ma_lon, mi_ma_lat = [lon, lon], [lat, lat]
         # interpolation function
@@ -198,7 +198,6 @@ def interp_conc_stations(path, exp,obs,obs_tot, ID):
         interp_lim_start_ss = interp_vars['SS'][0][0]
         interp_lim_start_ss_tot = interp_vars['SS_tot'][0][0]
 
-
         start_4_mod.append(obs['Start Date/Time'].values[m])
         end_4_mod.append(obs['End Date/Time'].values[m])
 
@@ -206,11 +205,10 @@ def interp_conc_stations(path, exp,obs,obs_tot, ID):
         conc_model_pro.append(interp_lim_start_pro)
         conc_model_lip.append(interp_lim_start_lip)
         conc_model_tot.append(interp_lim_start_pol +
-                             interp_lim_start_pro +
-                             interp_lim_start_lip)
+                              interp_lim_start_pro +
+                              interp_lim_start_lip)
         conc_model_ss.append(interp_lim_start_ss)
         conc_model_ss_tot.append(interp_lim_start_ss_tot)
-
 
         conc_obs_pol.append(obs['CCHO_µg_per_m3'].values[m])
         conc_obs_tot.append(obs['OC_µg_per_m3'].values[m])
@@ -227,19 +225,18 @@ def interp_conc_stations(path, exp,obs,obs_tot, ID):
 
         id_camp.append(ID)
 
-
     # create new dataframe to store the model data after interpolation together with obs.
     pd_da = pd.DataFrame({'ID': id_camp, 'Start Date/Time': start_4_mod, 'End Date/Time': end_4_mod,
-                          'conc_mod_poly': conc_model_pol, 'conc_mod_pro': conc_model_pro, 'conc_mod_lip': conc_model_lip,
+                          'conc_mod_poly': conc_model_pol, 'conc_mod_pro': conc_model_pro,
+                          'conc_mod_lip': conc_model_lip,
                           'conc_obs_poly_sub': conc_obs_pol, 'conc_obs_prot_sub': conc_obs_pro,
                           'conc_obs_lipi_sub': conc_obs_lip,
-                          'conc_obs_tot_sub': conc_obs_tot,'conc_mod_tot': conc_model_tot,
+                          'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
                           'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot,
-                          'Name_pro':name_pro,'Name_lip':name_lip})
+                          'Name_pro': name_pro, 'Name_lip': name_lip})
 
     pd_da['Start Date/Time'] = pd_da['Start Date/Time'].apply(pd.to_datetime)
     pd_da['End Date/Time'] = pd_da['End Date/Time'].apply(pd.to_datetime)
 
     return pd_da
-

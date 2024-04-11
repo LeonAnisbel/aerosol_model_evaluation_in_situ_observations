@@ -26,6 +26,11 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
               "Observation OMF": "royalblue",
               "Observation aerosol concentration": "palevioletred"}
     # Plot with seaborn
+    # df = df.drop(df[df.score < 50].index)
+    col_na = "Aerosol OMF & Concentration (µg m$^{-3}$)"
+    # df = df.drop(df[df.score < 50].index)
+    dict_df = dict_df.drop(dict_df[dict_df[col_na] <0].index)
+    # print(svd["Aerosol OMF & Concentration (µg m$^{-3}$)"].values)
     bx = sns.boxplot(data=dict_df, x="Measurements",
                      y="Aerosol OMF & Concentration (µg m$^{-3}$)", hue="",
                      palette=my_pal,
@@ -39,8 +44,8 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
 
     ax.text(0.1, 4, mol_name[0], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
     ax.text(3.2, 4, mol_name[1], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
-    ax.text(5.6, 2, mol_name[2], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
-    ax.text(7, 4, mol_name[3], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+    ax.text(6.6, 2, mol_name[2], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+    ax.text(8, 4, mol_name[3], fontsize='14', weight='bold', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
 
     # plot_text(dict_macrom[0], ax, ID[0], 0.1, 2, 50, 'PCHO')
     # plot_text(dict_macrom[1], ax, ID[1], 5, 7, 50, 'DCAA')
@@ -56,8 +61,8 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
 
     # dotted lines to separate groups
     ax.axvline(2.5, color=".3", dashes=(2, 2))
-    ax.axvline(5.5, color=".3", dashes=(2, 2))
-    ax.axvline(6.55, color=".3", dashes=(2, 2))
+    ax.axvline(6.5, color=".3", dashes=(2, 2))
+    ax.axvline(7.55, color=".3", dashes=(2, 2))
 
     plt.legend(loc="lower right", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 
@@ -77,7 +82,7 @@ if __name__ == '__main__':
 
 
     var = ['poly', 'prot', 'lipi','tot']
-    mac_names = ['PCHO|CCHO', 'DCAA|DFAA', 'PL|\n(PG+FFA)', '(PCHO+DCAA+PL)|OC']
+    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|\n(PG+FFA)', '(PCHO+DCAA+PL)|OC']
     mix_omf_conc = []
     for v in var:
         omf = pd.read_pickle(f'{data_dir}{v}_omf.pkl')
