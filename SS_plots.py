@@ -22,6 +22,7 @@ def rename_func(data_pd, col, na, new_na):
 
 def plot_fit(conc_mod_obs, obs_col_na,mod_col_na,title,xli,yli,loc):
     fig, ax = plt.subplots(figsize=(6, 5))
+    print(conc_mod_obs['Measurement'])
     sns.scatterplot(data=conc_mod_obs, x=obs_col_na, y=mod_col_na, hue="Measurement")
     lims = [
         np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
@@ -55,7 +56,7 @@ def plot_fit(conc_mod_obs, obs_col_na,mod_col_na,title,xli,yli,loc):
     ax.set_xscale('log')
     ax.set_xlim(xli)
     ax.set_ylim(yli)
-    plt.legend()
+    plt.legend(loc='upper left')
     ax.grid(linestyle='--', linewidth=0.4)
     fig.tight_layout()
 

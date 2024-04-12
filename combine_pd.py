@@ -56,7 +56,7 @@ def pd_combine_pol(exp, conc_pd, plot_dir):
     #                         f'SS_conc_box_{exp}')
 
     # Plotting box plots with statistics
-    names = ['NAO', 'CVAO', 'WAP', 'SVD14', 'SVD18']
+    names = ['NAO', 'CVAO', 'WAP', 'SVD14', 'SVD18', 'SVD19']
     dict_comp = dict((name, {'pol_mod': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_poly_sub'])[
                                  'conc_mod_poly'].to_list(),
                              'pol_obs': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_poly_sub'])[
@@ -163,7 +163,7 @@ def pd_combine_pro_lip(conc_pd, plot_dir):
     new_conc_pd_pro_nan = new_conc_pd_pro.dropna(subset=['Proteins Concentration (µg m$^{-3}$)'])
 
     # Plotting box plots with statistics
-    names = ['CVAO', 'SVD14', 'SVD18']
+    names = ['CVAO', 'SVD14', 'SVD18', 'SVD19']
     dict_comp_pro = dict((name, {
         'pro_mod': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_prot_sub'])['conc_mod_pro'].to_list(),
         'pro_obs': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_prot_sub'])['conc_obs_prot_sub'].to_list(),
@@ -232,7 +232,7 @@ def rename_func(data_pd, na, new_na):
 
 
 def pd_combine_all(dicc_po_to, dicc_pr, dicc_li, plot_dir):
-    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|\n(PG+FFA)', '(PCHO+DCAA+PL)|OC']
+    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|\n(FFA+PG)', '(PCHO+DCAA+PL)|OC']
     conc_pd_po = create_dataframe(dicc_po_to, 'conc_mod_poly', 'conc_obs_poly_sub', mac_names[0])
     conc_pd_pr = create_dataframe(dicc_pr, 'conc_mod_pro', 'conc_obs_prot_sub', mac_names[1])
     conc_pd_li = create_dataframe(dicc_li, 'conc_mod_lip', 'conc_obs_lipi_sub', mac_names[2])

@@ -53,9 +53,14 @@ def read_obs_data_loc():
 
     data_SVAL = data[69:207]
     data_SVAL_14_15_subm = data_SVAL[:23]
-    data_SVAL_18_19_subm = data_SVAL[23:45]
-    data_SVAL_14_15_tot = data_SVAL[45:69]
-    data_SVAL_18_19_tot = data_SVAL[69:]
+    data_SVAL_18_19_subm = data_SVAL[23:69]
+    data_SVAL_18_subm = data_SVAL_18_19_subm[:39]
+    data_SVAL_19_subm = data_SVAL_18_19_subm[39:]
+
+    data_SVAL_14_15_tot = data_SVAL[69:92]
+    data_SVAL_18_19_tot = data_SVAL[92:]
+    data_SVAL_18_tot = data_SVAL_18_19_tot[:39]
+    data_SVAL_19_tot = data_SVAL_18_19_tot[39:]
 
     data_RS = data[207:]
 
@@ -71,8 +76,10 @@ def read_obs_data_loc():
     CVAO = [data_CVAO, data_CVAO_subm, data_CVAO_tot]
     SVAL_14_15 = [data_SVAL, data_SVAL_14_15_subm, data_SVAL_14_15_tot]
     SVAL_18_19 = [data_SVAL, data_SVAL_18_19_subm, data_SVAL_18_19_tot]
+    SVAL_18 = [data_SVAL, data_SVAL_18_subm, data_SVAL_18_tot]
+    SVAL_19 = [data_SVAL, data_SVAL_19_subm, data_SVAL_19_tot]
 
-    return dates, PASCAL, PI_ICE, CVAO, SVAL_14_15, SVAL_18_19, data_RS
+    return dates, PASCAL, PI_ICE, CVAO, SVAL_14_15, SVAL_18_19, SVAL_18, SVAL_19, data_RS
 
 
 def read_model_spec_data(file):
