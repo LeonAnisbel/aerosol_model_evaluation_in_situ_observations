@@ -1,9 +1,10 @@
 ##### Import packges
 import numpy as np
 import pandas as pd
-import glob,os
+import glob, os
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 
 def rename_func(data_pd, col, na, new_na):
     pd_new = data_pd
@@ -16,8 +17,10 @@ def rename_func(data_pd, col, na, new_na):
 
     return pd_new
 
+
 def box_plot_vert(dict_df, mol_name, ID, title, lim):
     # Create new plot
+    #print(ID, list(dict_df["Measurements"]))
     fig, ax = plt.subplots(figsize=(15, 8))
     # YlGnBu
     states_palette = sns.color_palette("seismic", n_colors=4)
@@ -29,7 +32,7 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
     # df = df.drop(df[df.score < 50].index)
     col_na = "Aerosol OMF & Concentration (µg m$^{-3}$)"
     # df = df.drop(df[df.score < 50].index)
-    dict_df = dict_df.drop(dict_df[dict_df[col_na] <0].index)
+    dict_df = dict_df.drop(dict_df[dict_df[col_na] < 0].index)
     # print(svd["Aerosol OMF & Concentration (µg m$^{-3}$)"].values)
     bx = sns.boxplot(data=dict_df, x="Measurements",
                      y="Aerosol OMF & Concentration (µg m$^{-3}$)", hue="",
@@ -66,9 +69,28 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
 
     plt.legend(loc="lower right", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 
-    plt.savefig( f'plots/mixed_omf_conc_{title}_box.png', dpi=300, bbox_inches="tight")
+    plt.savefig(f'plots/mixed_omf_conc_{title}_box.png', dpi=300, bbox_inches="tight")
+
 
 # Press the green button in the gutter to run the script.
+def compute_aver_std(vals, val_na, i, id_biom):
+    print('\n', val_na)
+    cases = ['Model', 'Observation']
+    for sta in station_names[i]:
+        sel_vals = vals[vals['Measurements'] == sta]
+        mod_sel_vals = sel_vals[sel_vals[""] == cases[0]][val_na]
+        aver = mod_sel_vals.mean()
+        std = mod_sel_vals.std()
+        print('Model', id_biom, sta, '\n', len(mod_sel_vals), aver, std, '\n', '\n')
+
+        obs_sel_vals = sel_vals[sel_vals[""] == cases[1]][val_na]
+        aver = obs_sel_vals.mean()
+        std = obs_sel_vals.std()
+        print('Observation', id_biom, sta, '\n',len(obs_sel_vals),  aver, std, '\n', '\n')
+
+        print("Model mean bias")
+        print((np.array(mod_sel_vals.values)[:len(obs_sel_vals.values)]-np.array(obs_sel_vals.values)).mean())
+
 if __name__ == '__main__':
     # data paths
     data_dir = "pd_files/"
@@ -79,29 +101,36 @@ if __name__ == '__main__':
 
         pass
 
-
-
-    var = ['poly', 'prot', 'lipi','tot']
-    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|\n(FFA+PG)', '(PCHO+DCAA+PL)|OC']
+    var = ['poly', 'prot', 'lipi', 'tot']#
+    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|PG)', '(PCHO+DCAA+PL)|OM']#
+    station_names = [['NAO', 'CVAO', 'WAP'],#
+                     ['SVD14', 'SVD15', 'SVD18','CVAO  ', 'RS'],#
+                     ['CVAO '],
+                     ['NAO ', 'CVAO   ', 'WAP ']]#
     mix_omf_conc = []
-    for v in var:
+    for i, v in enumerate(var):
         omf = pd.read_pickle(f'{data_dir}{v}_omf.pkl')
-        omf_rename = rename_func(omf,'', 'Model', 'Model offline OMF')
+
+        omf_rename = rename_func(omf, '', 'Model', 'Model offline OMF')
         omf_rename = rename_func(omf_rename, '', 'Observation', 'Observation OMF')
         omf_rename = omf_rename.rename(columns={'Aerosol OMF':
-                                                      'Aerosol OMF & Concentration (µg m$^{-3}$)'})
-
-
+                                                    'Aerosol OMF & Concentration (µg m$^{-3}$)'})
         conc = pd.read_pickle(f'{data_dir}{v}_conc.pkl')
+        
+
         conc_rename = rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
         conc_rename = rename_func(conc_rename, '', 'Observation', 'Observation aerosol concentration')
         conc_rename = conc_rename.rename(columns={'Aerosol Concentration (µg m$^{-3}$)':
-                                                      'Aerosol OMF & Concentration (µg m$^{-3}$)'})#'Aerosol Concentration (µg m$^{-3}$)
+                                                      'Aerosol OMF & Concentration (µg m$^{-3}$)'})  #'Aerosol Concentration (µg m$^{-3}$)
 
         mix = pd.concat([omf_rename, conc_rename])
         mix_omf_conc.append(mix)
 
+        compute_aver_std(conc, 'Aerosol Concentration (µg m$^{-3}$)', i, v)
+        print('\n', '\n')
+        compute_aver_std(omf, 'Aerosol OMF', i, v)
+
     box_plot_vert(pd.concat([mix_omf_conc[0], mix_omf_conc[1],
-                             mix_omf_conc[2], mix_omf_conc[3]]),
-                             mac_names, ['pol', 'pro', 'lip'],
-                             'All_groups', [1e-6, 1e1])
+                              mix_omf_conc[2], mix_omf_conc[3]]),
+                   mac_names, ['pol', 'pro', 'lip'],
+                   'All_groups', [1e-6, 1e1])

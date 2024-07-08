@@ -5,27 +5,30 @@ import read_data_functions
 from scipy.interpolate import griddata
 
 
-def read_model(path, exp, dy, mo, yr, ext):
+def read_model(path, exp, day, mo, yr, ext):
     data_dir = f"{path}"
     if mo < 10:
         mo_str = f'0{mo}'
     else:
         mo_str = f'{mo}'
-
+    
+    print(yr, mo_str, day)
     files = f'{data_dir}{exp}_{yr}{mo_str}.01_{ext}.nc'
     file_ro = f'{data_dir}{exp}_{yr}{mo_str}.01_vphysc.nc'
 
-    #    file = f'{data_dir}{exp}_201701.01_{ext}.nc'
-    #    file_uv = f'{data_dir}{exp}_201701.01_echam.nc'
-
-    f_interp = []
     if os.path.exists(files):
         print('reading ', files, 'for interpolation with data month = ', mo)
         data = read_data_functions.read_model_spec_data(files)
         data_ro = read_data_functions.read_model_spec_data(file_ro)
-        da_m_ro = data_ro['rhoam1'].isel(time=dy - 1).isel(lev=46)  # .compute()
-
-        da_m_ds = data.isel(time=dy - 1).isel(lev=46)  # .compute()
+        t_len = len(data.time.values)
+        ti_sel = [int(day+t_len/2)-2, int(day+t_len/2)-1]
+        #print(ti_sel)
+        da_ro, da_ds = [], []
+        for ti in ti_sel:
+            da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))
+            da_ds.append(data.isel(time=ti).isel(lev=46))
+        da_m_ro = xr.concat(da_ro, dim='time')
+        da_m_ds = xr.concat(da_ds, dim='time')
 
     return da_m_ds, da_m_ro
 
@@ -82,6 +85,7 @@ def interp_func(mod_ds, mod_dr_ro, var, obs_lon, obs_lat, obs_lon_mi_ma, obs_lat
 
     unit_factor = 1e9
     dr_aer = dr_var * mod_dr_ro * unit_factor
+    dr_aer = dr_aer.mean(dim='time', skipna=True)
 
     points, values = get_mod_box(dr_aer, obs_lat_mi_ma, obs_lon_mi_ma)
     grid_lon, grid_lat = np.meshgrid(obs_lon, obs_lat)

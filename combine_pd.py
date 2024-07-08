@@ -56,7 +56,7 @@ def pd_combine_pol(exp, conc_pd, plot_dir):
     #                         f'SS_conc_box_{exp}')
 
     # Plotting box plots with statistics
-    names = ['NAO', 'CVAO', 'WAP', 'SVD14', 'SVD18', 'SVD19']
+    names = ['NAO', 'CVAO', 'WAP', 'SVD14', 'SVD15', 'SVD18']
     dict_comp = dict((name, {'pol_mod': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_poly_sub'])[
                                  'conc_mod_poly'].to_list(),
                              'pol_obs': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_poly_sub'])[
@@ -163,7 +163,7 @@ def pd_combine_pro_lip(conc_pd, plot_dir):
     new_conc_pd_pro_nan = new_conc_pd_pro.dropna(subset=['Proteins Concentration (µg m$^{-3}$)'])
 
     # Plotting box plots with statistics
-    names = ['CVAO', 'SVD14', 'SVD18', 'SVD19']
+    names = ['CVAO', 'SVD14', 'SVD15', 'SVD18']
     dict_comp_pro = dict((name, {
         'pro_mod': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_prot_sub'])['conc_mod_pro'].to_list(),
         'pro_obs': conc_pd[conc_pd['ID'] == name].dropna(subset=['conc_obs_prot_sub'])['conc_obs_prot_sub'].to_list(),
@@ -195,10 +195,15 @@ def pd_combine_pro_lip(conc_pd, plot_dir):
                                  -0.4)
 
 
-def create_dataframe(da_pd, mod, obs, mac_na):
+def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mac_na):
+    da_pd = da_pd_nan.dropna(subset=[obs])
+    print(da_pd)
     # combining all omf obs and model into a datframe (new_omf_pol) for box plot
     obs_pd = (list(da_pd[mod].values) +
               list(da_pd[obs].values))
+
+    obs_ss_pd = (list(da_pd[mod_ss].values) +
+              list(da_pd[obs_ss].values))
 
     id_all = (da_pd['ID'].to_list() +
               da_pd['ID'].to_list())
@@ -208,15 +213,16 @@ def create_dataframe(da_pd, mod, obs, mac_na):
 
     mac = len(mod_obs) * [mac_na]
 
-    new_omf_po = pd.DataFrame({'Aerosol Concentration (µg m$^{-3}$)': obs_pd,
+    new_omf_pd = pd.DataFrame({'Aerosol Concentration (µg m$^{-3}$)': obs_pd,
+                               'SS Concentration (µg m$^{-3}$)': obs_ss_pd,
                                'Measurements': id_all,
                                '': mod_obs,
                                'Macromolecules': mac})
 
     # new_omf_pd_tot_nan = new_omf_pd.dropna(subset=['Aerosol omf'])
-    new_omf_pd_po_nan = new_omf_po.dropna(subset=['Aerosol Concentration (µg m$^{-3}$)'])
+    # new_omf_pd_po_nan = new_omf_po.dropna(subset=['Aerosol Concentration (µg m$^{-3}$)'])
 
-    return new_omf_pd_po_nan
+    return new_omf_pd
 
 
 def rename_func(data_pd, na, new_na):
@@ -232,7 +238,7 @@ def rename_func(data_pd, na, new_na):
 
 
 def pd_combine_all(dicc_po_to, dicc_pr, dicc_li, plot_dir):
-    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|\n(FFA+PG)', '(PCHO+DCAA+PL)|OC']
+    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|PG', '(PCHO+DCAA+PL)|OM']
     conc_pd_po = create_dataframe(dicc_po_to, 'conc_mod_poly', 'conc_obs_poly_sub', mac_names[0])
     conc_pd_pr = create_dataframe(dicc_pr, 'conc_mod_pro', 'conc_obs_prot_sub', mac_names[1])
     conc_pd_li = create_dataframe(dicc_li, 'conc_mod_lip', 'conc_obs_lipi_sub', mac_names[2])
@@ -252,3 +258,29 @@ def pd_combine_all(dicc_po_to, dicc_pr, dicc_li, plot_dir):
     conc_pd_pr_new.to_pickle('pd_files/prot_conc.pkl')
     conc_pd_li_new.to_pickle('pd_files/lipi_conc.pkl')
     conc_pd_to_new.to_pickle('pd_files/tot_conc.pkl')
+
+
+def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
+    conc_pd = create_dataframe(dicc_va,
+                               mod_key_na,
+                               obs_key_na,
+                               'conc_mod_ss',
+                               'conc_obs_ss',
+                               mac_names)
+
+    if id_na == 'lipi':
+        conc_pd_new = rename_func(conc_pd, 'CVAO', 'CVAO ')
+    if id_na == 'prot':
+        conc_pd_new = rename_func(conc_pd, 'CVAO', 'CVAO  ')
+    if id_na == 'tot':
+        conc_pd_to1 = rename_func(conc_pd, 'CVAO', 'CVAO   ')
+        conc_pd_to2 = rename_func(conc_pd_to1, 'NAO', 'NAO ')
+        conc_pd_new = rename_func(conc_pd_to2, 'WAP', 'WAP ')
+    if id_na == 'poly':
+        conc_pd_new = conc_pd
+
+    # plot_functions.box_plot_vert(pd.concat([conc_pd_po, conc_pd_pr_new, conc_pd_li_new, conc_pd_to_new]),
+    #                              mac_names, ['pol', 'pro', 'lip'],
+    #                              'All_groups', [1e-6, 1e1])
+
+    conc_pd_new.to_pickle(f'pd_files/{id_na}_conc.pkl')

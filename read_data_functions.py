@@ -8,6 +8,7 @@ import codecs
 import pandas as pd
 import itertools
 
+
 ################################
 def read_obs_data_loc():
     #### Reading station locations
@@ -24,8 +25,11 @@ def read_obs_data_loc():
     PI_ICE_loc = pd.read_csv(doc, sep=',')
 
     # converting 'Date/Time' column to datetime data type
-    PASCAL_loc['Date/Time'] = PASCAL_loc['Date/Time'].apply(pd.to_datetime)
-    PI_ICE_loc['Date/Time'] = PI_ICE_loc['Date/Time'].apply(pd.to_datetime)
+    print(PASCAL_loc['Date/Time'].values)
+    PASCAL_loc['Date/Time'] = [pd.Timestamp(row).to_pydatetime() for row in PASCAL_loc['Date/Time'].values]
+    PI_ICE_loc['Date/Time'] = [pd.Timestamp(row).to_pydatetime() for row in PI_ICE_loc['Date/Time'].values]
+
+    print(PI_ICE_loc['Date/Time'])
 
     doc = codecs.open(main_dir + pol_data, 'r', 'UTF-8')  # open for reading with "universal" type set
     data = pd.read_csv(doc, sep=',')
@@ -33,36 +37,41 @@ def read_obs_data_loc():
     # converting 'Date/Time' column to datetime data type
     data['Start Date/Time'] = data['Start Date/Time'].apply(pd.to_datetime)
     data['End Date/Time'] = data['End Date/Time'].apply(pd.to_datetime)
-
+    print(data['Event'])
     # Save data for PI_ICE
-    data_PI_ICE = data[:24]
-    data_PI_ICE_subm = data_PI_ICE[:8]  # data for submicron aerosol size
-    data_PI_ICE_super = data_PI_ICE[8:16]  # data for supermicron aerosol size
-    data_PI_ICE_tot = data_PI_ICE[16:]  # data for all aerosol sizes
+    data_PI_ICE_subm_1 = data[data['Station_sizes'] == 'PI-ICE_0.05_1.2']  # data for submicron aerosol size
+    data_PI_ICE_subm_2 = data[data['Station_sizes'] == 'PI-ICE_0.14_1.2']  # data for submicron aerosol size
+    data_PI_ICE_super = data[data['Station_sizes'] == 'PI-ICE_1.2_10']  # data for supermicron aerosol size
+    data_PI_ICE_tot = data[data['Station_sizes'] == 'PI-ICE_0.05_10']  # data for all aerosol sizes
 
     # Save data for PASCAL
-    data_PASCAL = data[24:33]
-    data_PASCAL_subm = data_PASCAL[:3]  # data for submicron aerosol size
-    data_PASCAL_super = data_PASCAL[3:6]  # data for supermicron aerosol size
-    data_PASCAL_tot = data_PASCAL[6:]  # data for all aerosol sizes
+    # data_PASCAL = data[24:33]
+    data_PASCAL_subm_1 = data[data['Station_sizes'] == 'PASCAL_0.05_1.2']  # data for submicron aerosol size
+    data_PASCAL_subm_2 = data[data['Station_sizes'] == 'PASCAL_0.14_1.2']  # data for submicron aerosol size
+    data_PASCAL_super = data[data['Station_sizes'] == 'PASCAL_1.2_10']  # data for supermicron aerosol size
+    data_PASCAL_tot = data[data['Station_sizes'] == 'PASCAL_0.05_10']  # data for all aerosol sizes
 
     data_CVAO = data[33:69]  # data for PM1 aerosol sizes
-    data_CVAO_subm = data_CVAO[:28]
+    data_CVAO_subm_1 = data[data['Station_sizes'] == 'CVAO_0.05-1.2 µm']
+    data_CVAO_subm_2 = data[data['Station_sizes'] == 'CVAO_PM1']
+
     # data_CVAO_super = data_CVAO[28:36]
-    data_CVAO_tot = data_CVAO[28:]
+    data_CVAO_tot = data[data['Station_sizes'] == 'CVAO_0.05-10 µm']
 
     data_SVAL = data[69:207]
-    data_SVAL_14_15_subm = data_SVAL[:23]
-    data_SVAL_18_19_subm = data_SVAL[23:69]
-    data_SVAL_18_subm = data_SVAL_18_19_subm[:39]
-    data_SVAL_19_subm = data_SVAL_18_19_subm[39:]
+    data_SVAL_14_subm = data[data['Station_sizes'] == 'Sval_0-1.5µm_14']
+    data_SVAL_15_subm_1 = data[data['Station_sizes'] == 'Sval_0-1.5µm_15']
+    data_SVAL_15_subm_2 = data[data['Station_sizes'] == 'Sval_0.95-1.5µm_15']
 
-    data_SVAL_14_15_tot = data_SVAL[69:92]
-    data_SVAL_18_19_tot = data_SVAL[92:]
-    data_SVAL_18_tot = data_SVAL_18_19_tot[:39]
-    data_SVAL_19_tot = data_SVAL_18_19_tot[39:]
+    data_SVAL_18_subm = data[data['Station_sizes'] == 'Sval_0-1.5µm_18']
 
-    data_RS = data[207:]
+    data_SVAL_14_tot = data[data['Station_sizes'] == 'Sval_0-10µm_14']
+    data_SVAL_15_tot = data[data['Station_sizes'] == 'Sval_0-10µm_15']
+
+    data_SVAL_18_tot = data[data['Station_sizes'] == 'Sval_0-10µm_18']
+
+    data_RS = data[data['Station_sizes'] == 'Ross_sea_0-1.5µm']
+
 
     dates = []
     for i, d in enumerate(data['Start Date/Time'].dt.month):
@@ -71,15 +80,16 @@ def read_obs_data_loc():
     dates.sort()
     dates = list(k for k, _ in itertools.groupby(dates))
 
-    PI_ICE = [PI_ICE_loc, data_PI_ICE, data_PI_ICE_subm, data_PI_ICE_super, data_PI_ICE_tot]
-    PASCAL = [PASCAL_loc, data_PASCAL, data_PASCAL_subm, data_PASCAL_super, data_PASCAL_tot]
-    CVAO = [data_CVAO, data_CVAO_subm, data_CVAO_tot]
-    SVAL_14_15 = [data_SVAL, data_SVAL_14_15_subm, data_SVAL_14_15_tot]
-    SVAL_18_19 = [data_SVAL, data_SVAL_18_19_subm, data_SVAL_18_19_tot]
-    SVAL_18 = [data_SVAL, data_SVAL_18_subm, data_SVAL_18_tot]
-    SVAL_19 = [data_SVAL, data_SVAL_19_subm, data_SVAL_19_tot]
+    PI_ICE = [PI_ICE_loc, data_PI_ICE_subm_2, data_PI_ICE_super, data_PI_ICE_tot]
+    PASCAL = [PASCAL_loc, data_PASCAL_subm_2, data_PASCAL_super, data_PASCAL_tot]
+    CVAO = [data_CVAO, data_CVAO_subm_2, data_CVAO_tot]
+    SVAL_14 = [data_SVAL, data_SVAL_14_subm, data_SVAL_14_tot]
+    SVAL_15 = [data_SVAL, data_SVAL_15_subm_2, data_SVAL_15_tot]
 
-    return dates, PASCAL, PI_ICE, CVAO, SVAL_14_15, SVAL_18_19, SVAL_18, SVAL_19, data_RS
+    # SVAL_18_19 = [data_SVAL, data_SVAL_18_19_subm, data_SVAL_18_19_tot]
+    SVAL_18 = [data_SVAL, data_SVAL_18_subm, data_SVAL_18_tot]
+
+    return dates, PASCAL, PI_ICE, CVAO, SVAL_14, SVAL_15, SVAL_18, data_RS
 
 
 def read_model_spec_data(file):
