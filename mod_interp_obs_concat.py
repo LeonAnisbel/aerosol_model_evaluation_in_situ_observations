@@ -190,7 +190,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
 
         conc_obs_pol_sub.append(ds_sub['CCHO_µg_per_m3'].values[i])
         conc_obs_tot_sub.append(ds_sub['OM_µg_per_m3'].values[i])
-        conc_obs_pro.append(ds_sub['FAA_µg_per_m3'].values[i])
+        conc_obs_pro.append(ds_sub['CAA_µg_per_m3'].values[i])
         conc_obs_lip.append(ds_sub['PG_µg_per_m3'].values[i])
         conc_obs_ss.append(ds_sub['SS_µg_per_m3'].values[i])
         if i < len(ds_lim['SS_µg_per_m3'].values):
@@ -214,7 +214,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
                               interp_lim_start_pro +
                               interp_lim_start_lip)
 
-        name_pro.append('DCAA   DFAA')
+        name_pro.append('DCAA   CAA')
         name_lip.append('Lipids  PG')
 
         id_camp.append(ID)
@@ -300,7 +300,7 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
 
         conc_obs_pol.append(obs['CCHO_µg_per_m3'].values[m])
         conc_obs_tot.append(obs['OM_µg_per_m3'].values[m])
-        conc_obs_pro.append(obs['FAA_µg_per_m3'].values[m])
+        conc_obs_pro.append(obs['CAA_µg_per_m3'].values[m])
         conc_obs_lip.append(obs['PG_µg_per_m3'].values[m])
         conc_obs_ss.append(obs['SS_µg_per_m3'].values[m])
         if m < len(obs_tot['SS_µg_per_m3'].values):
@@ -308,7 +308,7 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
         else:
             conc_obs_ss_tot.append(np.nan)
 
-        name_pro.append('DCAA   DFAA')
+        name_pro.append('DCAA   CAA')
         name_lip.append('Lipids  PG')
 
         id_camp.append(ID)

@@ -238,7 +238,7 @@ def rename_func(data_pd, na, new_na):
 
 
 def pd_combine_all(dicc_po_to, dicc_pr, dicc_li, plot_dir):
-    mac_names = ['PCHO|CCHO', 'DCAA|FAA', 'PL|PG', '(PCHO+DCAA+PL)|OM']
+    mac_names = ['PCHO|CCHO', 'DCAA|CAA', 'PL|PG', '(PCHO+DCAA+PL)|OM']
     conc_pd_po = create_dataframe(dicc_po_to, 'conc_mod_poly', 'conc_obs_poly_sub', mac_names[0])
     conc_pd_pr = create_dataframe(dicc_pr, 'conc_mod_pro', 'conc_obs_prot_sub', mac_names[1])
     conc_pd_li = create_dataframe(dicc_li, 'conc_mod_lip', 'conc_obs_lipi_sub', mac_names[2])

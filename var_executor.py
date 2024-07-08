@@ -55,28 +55,33 @@ def interp_svd_rs(SVAL_14, SVAL_15, SVAL_18, RS_18_20, pd_obs_mo_cvao):
                                                                    SVAL_15[1],
                                                                    SVAL_15[2],
                                                                    'SVD15')
-    pd_obs_mo_sval_14 = mod_interp_obs_concat.interp_conc_stations(data_dir,
-                                                                      exp,
-                                                                      SVAL_14[1],
-                                                                      SVAL_14[2],
-                                                                      'SVD14')
-    pd_obs_mo_sval_18 = mod_interp_obs_concat.interp_conc_stations(data_dir,
-                                                                   exp,
-                                                                   SVAL_18[1],
-                                                                   SVAL_18[2],
-                                                                   'SVD18')
-    pd_obs_mo_rs_18_20 = mod_interp_obs_concat.interp_conc_stations(data_dir,
-                                                                    exp,
-                                                                    RS_18_20,
-                                                                    RS_18_20,
-                                                                    'RS')
+    # pd_obs_mo_sval_14 = mod_interp_obs_concat.interp_conc_stations(data_dir,
+    #                                                                   exp,
+    #                                                                   SVAL_14[1],
+    #                                                                   SVAL_14[2],
+    #                                                                   'SVD14')
+    # pd_obs_mo_sval_18 = mod_interp_obs_concat.interp_conc_stations(data_dir,
+    #                                                                exp,
+    #                                                                SVAL_18[1],
+    #                                                                SVAL_18[2],
+    #                                                                'SVD18')
+    # pd_obs_mo_rs_18_20 = mod_interp_obs_concat.interp_conc_stations(data_dir,
+    #                                                                 exp,
+    #                                                                 RS_18_20,
+    #                                                                 RS_18_20,
+    #                                                                 'RS')
 
 
 
     print('Finished interpolation SVD')
-    conc_all_pr = pd.concat([pd_obs_mo_cvao, pd_obs_mo_sval_14, pd_obs_mo_sval_15, pd_obs_mo_sval_18, pd_obs_mo_rs_18_20])
+    conc_all_pr = pd.concat([pd_obs_mo_cvao,
+                             # pd_obs_mo_sval_14,
+                             pd_obs_mo_sval_15,
+                             # pd_obs_mo_sval_18,
+                             # pd_obs_mo_rs_18_20
+                             ])
     combine_pd.pd_combine_group(conc_all_pr,
-                                'DCAA|FAA',
+                                'DCAA|CAA',
                                 'conc_mod_pro',
                                 'conc_obs_prot_sub',
                                 'prot')

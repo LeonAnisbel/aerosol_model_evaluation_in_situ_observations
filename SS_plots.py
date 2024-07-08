@@ -96,9 +96,11 @@ def plot_ss(conc_ss):
                       (conc_ss['Measurements'] == 'CVAO') |
                       (conc_ss['Measurements'] == 'WAP') |
                       (conc_ss['Measurements'] == 'NAO') |
-                      (conc_ss['Measurements'] == 'SVD14') |
-                      (conc_ss['Measurements'] == 'SVD15') |
-                      (conc_ss['Measurements'] == 'SVD18')]
+                      #(conc_ss['Measurements'] == 'SVD14') |
+                      (conc_ss['Measurements'] == 'SVD15')]
+                      #(conc_ss['Measurements'] == 'SVD18')
+
+    print(conc_ss[conc_ss['Measurements']=='CVAO  '])
     mod_pd = conc_ss[conc_ss[''] == 'ECHAM-HAM aerosol concentration']
     obs_pd = conc_ss[conc_ss[''] == 'Observation aerosol concentration']
 
@@ -107,11 +109,11 @@ def plot_ss(conc_ss):
         # len(i) > 3 and i[:3] == 'CVAO        else:
         i_new = i
         if i == 'CVAO ':
-            i_new = 'CVAO_PG'
+            i_new = 'CVAO_PG$_{aer}$'
         if i == 'CVAO':
-            i_new = 'CVAO_CCHO'
+            i_new = 'CVAO_CCHO$_{aer}$'
         if i == 'CVAO  ':
-            i_new = 'CVAO_FAA'
+            i_new = 'CVAO_AA$_{aer}$'
 
         new_meas_vals.append(i_new)
     conc_ss_pd = pd.DataFrame(data={'Measurements': new_meas_vals,
@@ -121,20 +123,25 @@ def plot_ss(conc_ss):
     new_conc_ss = conc_ss_pd.dropna(subset=[obs_col_na])
     new_conc_ss = new_conc_ss.dropna(subset=[mod_col_na])
 
-    print(new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].min(),
-          new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].max())
+    #print(new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].min(),
+     #     new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].max())
     # new_meas_vals.append('NO_STAT')
+    # print(new_conc_ss)
     for m in range(len(new_meas_vals)):
         mod_ss = new_conc_ss[new_conc_ss['Measurements'] == new_meas_vals[m]][mod_col_na]
+        print('SS', new_meas_vals[m])
+
+        # print(mod_ss)
+
         obs_ss = new_conc_ss[new_conc_ss['Measurements'] == new_meas_vals[m]][obs_col_na]
         RMSE, mean_bias, NMB, R = get_stat(obs_ss, mod_ss)
 
-        # if new_meas_vals[m] != new_meas_vals[m + 1]:
-        print('SS', new_meas_vals[m])
-        print('MOdel ', mod_ss.mean(), mod_ss.std())
-        print('Observations ', obs_ss.mean(), obs_ss.std())
-
-        print('Statistics: ', 'RMSE:', RMSE, 'bias: ', mean_bias, 'NMB: ', NMB, 'R:', R, '\n')
+        # # if new_meas_vals[m] != new_meas_vals[m + 1]:
+        # print('SS', new_meas_vals[m])
+        # print('MOdel ', mod_ss.mean(), mod_ss.std())
+        # print('Observations ', obs_ss.mean(), obs_ss.std())
+        #
+        # print('Statistics: ', 'RMSE:', RMSE, 'bias: ', mean_bias, 'NMB: ', NMB, 'R:', R, '\n')
     # conc_mod_obs_ss_acc = transform_pd(new_conc_ss, old_cols, obs_col_na, mod_col_na)
     plot_fit(new_conc_ss,
              obs_col_na, mod_col_na,
