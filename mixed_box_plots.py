@@ -5,6 +5,8 @@ import glob, os
 import seaborn as sns
 import matplotlib.pyplot as plt
 import SS_plots
+import global_vars
+
 
 def rename_func(data_pd, col, na, new_na):
     pd_new = data_pd
@@ -96,7 +98,7 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
     ax.axvline(5.55, color=".3", dashes=(2, 2))
 
 
-    plt.savefig(f'plots/mixed_omf_conc_{title}_box.png', dpi=300, bbox_inches="tight")
+    plt.savefig(f'plots/mixed_omf_conc_{title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
     plt.show()
 
 
@@ -107,7 +109,7 @@ def compute_aver_std(vals, val_na, i, id_biom):
     for sta in station_names[i]:
         sel_vals = vals[vals['Measurements'] == sta]
         mod_sel_vals = sel_vals[sel_vals[""] == cases[0]][val_na]
-        aver = mod_sel_vals.mean()
+        aver = mod_sel_vals.median()
         std = mod_sel_vals.std()
         print('Model', id_biom, sta, '\n', len(mod_sel_vals), aver, std, '\n', '\n')
 
@@ -115,9 +117,11 @@ def compute_aver_std(vals, val_na, i, id_biom):
         aver = obs_sel_vals.mean()
         std = obs_sel_vals.std()
         print('Observation', id_biom, sta, '\n', len(obs_sel_vals), aver, std, '\n', '\n')
-
-        print("Model mean bias")
-        print((np.array(mod_sel_vals.values)[:len(obs_sel_vals.values)] - np.array(obs_sel_vals.values)).mean())
+        diff = (np.array(mod_sel_vals.values) - np.array(obs_sel_vals.values))
+        mean_bias = np.nanmean(diff)
+        NMB = np.nanmean(diff/np.array(obs_sel_vals.values))
+        print("Model mean bias ", mean_bias, 'NMB ', NMB)
+        #print((np.array(mod_sel_vals.values)[:len(obs_sel_vals.values)] - np.array(obs_sel_vals.values)).mean())
 
 
 if __name__ == '__main__':
@@ -147,7 +151,7 @@ if __name__ == '__main__':
         omf_rename = omf_rename.rename(columns={'Aerosol OMF':
                                                     'Aerosol OMF'})
 
-        conc = pd.read_pickle(f'{data_dir}{v}_conc.pkl')
+        conc = pd.read_pickle(f'{data_dir}{v}_conc_{global_vars.exp_name}.pkl')
         conc_rename = rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
         conc_rename = rename_func(conc_rename, '', 'Observation', 'Observation aerosol concentration')
         all_conc.append(conc_rename)

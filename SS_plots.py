@@ -8,6 +8,8 @@ import scipy
 from sklearn.metrics import mean_squared_error
 import math
 
+import global_vars
+
 
 def rename_func(data_pd, col, na, new_na):
     pd_new = data_pd
@@ -50,7 +52,8 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
     RMSE, mean_bias, NMB, R = get_stat(obs,mod)
     formatted_pvalues = (f'RMSE= {np.round(RMSE, 2)} \n bias= {np.round(mean_bias, 2)} '
                          f'\n R= {np.round(R, 2)}')
-    ax.text(loc, 0.0015, formatted_pvalues, fontsize='14')
+    print(formatted_pvalues)
+    #    ax.text(loc, 0.0015, formatted_pvalues, fontsize='14')
 
     # Customizing axes
     # ax.set_title(title, fontsize='16')
@@ -66,7 +69,7 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
     ax.grid(linestyle='--', linewidth=0.4)
     fig.tight_layout()
 
-    plt.savefig(f'plots/SS_conc_{title}_box.png')
+    plt.savefig(f'plots/SS_conc_{title}_box_{global_vars.exp_name}.png',dpi = 300)
     plt.close()
 
 
@@ -100,7 +103,7 @@ def plot_ss(conc_ss):
                       (conc_ss['Measurements'] == 'SVD15')]
                       #(conc_ss['Measurements'] == 'SVD18')
 
-    print(conc_ss[conc_ss['Measurements']=='CVAO  '])
+    #print(conc_ss[conc_ss['Measurements']=='CVAO  '])
     mod_pd = conc_ss[conc_ss[''] == 'ECHAM-HAM aerosol concentration']
     obs_pd = conc_ss[conc_ss[''] == 'Observation aerosol concentration']
 
@@ -114,7 +117,8 @@ def plot_ss(conc_ss):
             i_new = 'CVAO_CCHO$_{aer}$'
         if i == 'CVAO  ':
             i_new = 'CVAO_AA$_{aer}$'
-
+        if i == 'SVD15':
+            i_new = 'SVD'
         new_meas_vals.append(i_new)
     conc_ss_pd = pd.DataFrame(data={'Measurements': new_meas_vals,
                                     'Observations SS concentration (µg m$^{-3}$)': obs_pd[old_cols].values,
@@ -137,18 +141,18 @@ def plot_ss(conc_ss):
         RMSE, mean_bias, NMB, R = get_stat(obs_ss, mod_ss)
 
         # # if new_meas_vals[m] != new_meas_vals[m + 1]:
-        # print('SS', new_meas_vals[m])
-        # print('MOdel ', mod_ss.mean(), mod_ss.std())
-        # print('Observations ', obs_ss.mean(), obs_ss.std())
+        #print('SS', new_meas_vals[m])
+        print('MOdel ', mod_ss.median(), mod_ss.std())
+        print('Observations ', obs_ss.median(), obs_ss.std())
         #
-        # print('Statistics: ', 'RMSE:', RMSE, 'bias: ', mean_bias, 'NMB: ', NMB, 'R:', R, '\n')
+        print('Statistics: ', 'RMSE:', RMSE, 'bias: ', mean_bias, 'NMB: ', NMB, 'R:', R, '\n')
     # conc_mod_obs_ss_acc = transform_pd(new_conc_ss, old_cols, obs_col_na, mod_col_na)
     plot_fit(new_conc_ss,
              obs_col_na, mod_col_na,
              mac_names,
              [1e-3, 1e1],
              [1e-3, 1e1],
-             0.5)
+             0.7)
 
 
 # Press the green button in the gutter to run the script.

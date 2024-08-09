@@ -34,7 +34,7 @@ if __name__ == '__main__':
     plt.scatter(conc_gr['Start Date/Time'], conc_gr['Model_pr'], color='r', label='Model')
     plt.scatter(conc_gr['Start Date/Time'], conc_gr['Observation_pr'], color='b', label='Observation')
     ax.tick_params(axis='x', labelrotation=45)
-    ax.set_ylabel('DCAA | FAA')
+    ax.set_ylabel('DCAA | CAA')
     plt.legend()
     ax.set_yscale('log')
 

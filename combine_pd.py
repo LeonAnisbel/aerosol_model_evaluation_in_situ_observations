@@ -1,3 +1,4 @@
+import global_vars
 import plot_functions
 import pandas as pd
 import numpy as np
@@ -283,4 +284,4 @@ def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
     #                              mac_names, ['pol', 'pro', 'lip'],
     #                              'All_groups', [1e-6, 1e1])
 
-    conc_pd_new.to_pickle(f'pd_files/{id_na}_conc.pkl')
+    conc_pd_new.to_pickle(f'pd_files/{id_na}_conc_{global_vars.exp_name}.pkl')

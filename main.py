@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
 
     pd_obs_mo_cvao = var_executor.interp_cvao(CVAO)
-    # var_executor.interp_piice_pascal(PI_ICE, PASCAL, pd_obs_mo_cvao)
+    #var_executor.interp_piice_pascal(PI_ICE, PASCAL, pd_obs_mo_cvao)
     var_executor.interp_svd_rs(SVAL_14, SVAL_15, SVAL_18, RS_18_20, pd_obs_mo_cvao)
 
      # # combine data of poly for all stations and generate box plot with statistics
