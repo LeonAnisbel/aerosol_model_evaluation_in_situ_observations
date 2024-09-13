@@ -4,6 +4,8 @@ import pandas as pd
 import glob, os
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+import OC_plots
 import SS_plots
 import global_vars
 
@@ -136,11 +138,12 @@ if __name__ == '__main__':
 
     var = ['poly', 'prot', 'lipi', 'tot']  #
     mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$',
-                 '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$)|OM']  #
+                 '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$)|OM$_{aer}$']  #
     station_names = [['NAO', 'CVAO', 'WAP'],  #
                      ['SVD14', 'SVD15', 'SVD18', 'CVAO  ', 'RS'],  #
                      ['CVAO '],
                      ['NAO ', 'CVAO   ', 'WAP ']]  #
+    fig_title = 'All_groups'
     mix_omf_conc = []
     all_conc = []
     for i, v in enumerate(var):
@@ -152,6 +155,33 @@ if __name__ == '__main__':
                                                     'Aerosol OMF'})
 
         conc = pd.read_pickle(f'{data_dir}{v}_conc_{global_vars.exp_name}.pkl')
+
+# Comment this section if only PMOA should be considered, otherwise it will compute PMOA+OC
+############################################################################
+        if v == 'tot':
+            mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$',
+                         '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$+OC)|OM$_{aer}$']
+            fig_title = 'With_OC_All_groups'
+
+            conc_oc = pd.read_pickle(f'{data_dir}oc_conc_{global_vars.exp_name}.pkl')
+            OC_plots.plot_oc(conc_oc, 'OC')
+            print(conc)
+            new_conc_om = (conc_oc[conc_oc['']=='Model']['Aerosol Concentration (µg m$^{-3}$)'].values +
+                           conc[conc_oc['']=='Model']['Aerosol Concentration (µg m$^{-3}$)'].values)
+            conc.drop(columns = ['Aerosol Concentration (µg m$^{-3}$)'])
+            conc['Aerosol Concentration (µg m$^{-3}$)'] = (list(new_conc_om) +
+                                                           conc[conc[''] == 'Observation'][
+                                                               'Aerosol Concentration (µg m$^{-3}$)'].to_list())
+
+            print(conc['Aerosol Concentration (µg m$^{-3}$)'])
+            conc_oc.drop(columns = ['Aerosol Concentration (µg m$^{-3}$)'])
+            conc_oc['Aerosol Concentration (µg m$^{-3}$)'] = (list(new_conc_om) +
+                                                           conc_oc[conc_oc[''] == 'Observation'][
+                                                               'Aerosol Concentration (µg m$^{-3}$)'].to_list())
+            OC_plots.plot_oc(conc_oc, 'OC+PMOA')
+            # exit()
+############################################################################
+
         conc_rename = rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
         conc_rename = rename_func(conc_rename, '', 'Observation', 'Observation aerosol concentration')
         all_conc.append(conc_rename)
@@ -172,5 +202,5 @@ if __name__ == '__main__':
     box_plot_vert(pd.concat([mix_omf_conc[0], mix_omf_conc[1],
                              mix_omf_conc[2], mix_omf_conc[3]]),
                   mac_names, ['pol', 'pro', 'lip'],
-                  'All_groups', [1e-6, 1e1])
+                  fig_title, [1e-6, 1e1])
 

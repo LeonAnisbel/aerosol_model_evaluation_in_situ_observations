@@ -26,6 +26,7 @@ def get_interp_fixed_loc(lo, la, mod_da, mod_ro_da):
             interp_vars['PRO'][0][0],
             interp_vars['LIP'][0][0],
             interp_vars['SS'][0][0],
+            interp_vars['OC'][0][0],
             interp_vars['SS_tot'][0][0])
 
 
@@ -55,13 +56,13 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     mo_end = ds_lim['End Date/Time'].dt.month.values  # list with months
 
     start_4_mod, end_4_mod = [], []
-    conc_model_pol, conc_model_pro, conc_model_lip = [], [], []
+    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_oc = [], [], [], []
     conc_model_ss, conc_model_ss_tot, conc_model_tot = [], [], []
 
     conc_obs_pol_sub, conc_obs_tot_sub = [], []
     conc_obs_pol_sup, conc_obs_tot_sup = [], []
 
-    conc_obs_pol, conc_obs_pro, conc_obs_lip = [], [], []
+    conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_oc = [], [], [], []
     conc_obs_ss, conc_obs_ss_tot, conc_obs_tot = [], [], []
     name_lip, name_pro = [], []
     id_camp = []
@@ -69,12 +70,15 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     for i, (start, end) in enumerate(zip(time_var_start, time_var_end)):
 
         # times, lats and lons between start and end
-        conc_mod_pol, conc_mod_pro, conc_mod_lip, conc_mod_ss, conc_mod_ss_tot = [], [], [], [], []
+        conc_mod_pol, conc_mod_pro, conc_mod_lip, conc_mod_oc = [], [], [], []
+        conc_mod_ss, conc_mod_ss_tot = [], []
         interp_btw = []
         interp_btw_pol = []
         interp_btw_pro = []
         interp_btw_lip = []
+        interp_btw_oc = []
         interp_btw_ss = []
+
         interp_btw_ss_tot = []
 
         # saving lats, longs and months between start and end into a list
@@ -137,24 +141,28 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
                 f_interp_pro = interp_vars['PRO']
                 f_interp_lip = interp_vars['LIP']
                 f_interp_ss = interp_vars['SS']
+                f_interp_oc = interp_vars['OC']
                 f_interp_ss_tot = interp_vars['SS_tot']
 
                 interp_btw_pol.append(f_interp_pol)
                 interp_btw_pro.append(f_interp_pro)
                 interp_btw_lip.append(f_interp_lip)
                 interp_btw_ss.append(f_interp_ss)
+                interp_btw_oc.append(f_interp_oc)
                 interp_btw_ss_tot.append(f_interp_ss_tot)
 
             interp_btw_pol = concat_lists(interp_btw_pol)
             interp_btw_pro = concat_lists(interp_btw_pro)
             interp_btw_lip = concat_lists(interp_btw_lip)
             interp_btw_ss = concat_lists(interp_btw_ss)
+            interp_btw_oc = concat_lists(interp_btw_oc)
             interp_btw_ss_tot = concat_lists(interp_btw_ss_tot)
 
             conc_mod_pol.append(np.nanmean(interp_btw_pol))
             conc_mod_pro.append(np.nanmean(interp_btw_pro))
             conc_mod_lip.append(np.nanmean(interp_btw_lip))
             conc_mod_ss.append(np.nanmean(interp_btw_ss))
+            conc_mod_oc.append(np.nanmean(interp_btw_oc))
             conc_mod_ss_tot.append(np.nanmean(interp_btw_ss_tot))
 
         else:
@@ -183,7 +191,8 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
             conc_mod_pro.append(np.nanmean([interp_lim_start[1], interp_lim_end[1]]))
             conc_mod_lip.append(np.nanmean([interp_lim_start[2], interp_lim_end[2]]))
             conc_mod_ss.append(np.nanmean([interp_lim_start[3], interp_lim_end[3]]))
-            conc_mod_ss_tot.append(np.nanmean([interp_lim_start[4], interp_lim_end[4]]))
+            conc_mod_oc.append(np.nanmean([interp_lim_start[4], interp_lim_end[4]]))
+            conc_mod_ss_tot.append(np.nanmean([interp_lim_start[5], interp_lim_end[5]]))
 
         start_4_mod.append(ds_lim['Start Date/Time'].values[i])
         end_4_mod.append(ds_lim['End Date/Time'].values[i])
@@ -192,6 +201,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
         conc_obs_tot_sub.append(ds_sub['OM_µg_per_m3'].values[i])
         conc_obs_pro.append(ds_sub['CAA_µg_per_m3'].values[i])
         conc_obs_lip.append(ds_sub['PG_µg_per_m3'].values[i])
+        conc_obs_oc.append(ds_sub['OC_µg_per_m3'].values[i])
         conc_obs_ss.append(ds_sub['SS_µg_per_m3'].values[i])
         if i < len(ds_lim['SS_µg_per_m3'].values):
             conc_obs_ss_tot.append(ds_lim['SS_µg_per_m3'].values[i])
@@ -202,12 +212,14 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
         interp_lim_start_pro = np.nanmean(conc_mod_pro)
         interp_lim_start_lip = np.nanmean(conc_mod_lip)
         interp_lim_start_ss = np.nanmean(conc_mod_ss)
+        interp_lim_start_oc = np.nanmean(conc_mod_oc)
         interp_lim_start_ss_tot = np.nanmean(conc_mod_ss_tot)
 
         conc_model_pol.append(interp_lim_start_pol)
         conc_model_pro.append(interp_lim_start_pro)
         conc_model_lip.append(interp_lim_start_lip)
         conc_model_ss.append(interp_lim_start_ss)
+        conc_model_oc.append(interp_lim_start_oc)
         conc_model_ss_tot.append(interp_lim_start_ss_tot)
 
         conc_model_tot.append(interp_lim_start_pol +
@@ -227,6 +239,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
                           'conc_obs_lipi_sub': conc_obs_lip,
                           'conc_obs_tot_sub': conc_obs_tot_sub, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
+                          'conc_obs_oc': conc_obs_oc, 'conc_mod_oc': conc_model_oc,
                           'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot,
                           'Name_pro': name_pro, 'Name_lip': name_lip})
 
@@ -239,8 +252,10 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
 def interp_conc_stations(path, exp, obs, obs_tot, ID):
     start_4_mod, end_4_mod = [], []
     id_camp = []
-    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot, conc_model_ss, conc_model_ss_tot = [], [], [], [], [], []
-    conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot, conc_obs_ss, conc_obs_ss_tot = [], [], [], [], [], []
+    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
+    conc_model_ss, conc_model_oc, conc_model_ss_tot = [], [], []
+    conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot = [], [], [], []
+    conc_obs_ss, conc_obs_oc, conc_obs_ss_tot = [], [], []
     svd_data = [[], [], []]
     name_lip, name_pro = [], []
     dates_start = obs['Start Date/Time']
@@ -296,13 +311,17 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
                                      interp_lim_start[1] +
                                      interp_lim_start[2]))
         conc_model_ss.append(interp_lim_start[3])
-        conc_model_ss_tot.append(interp_lim_start[4])
+        conc_model_oc.append(interp_lim_start[4])
+
+        conc_model_ss_tot.append(interp_lim_start[5])
 
         conc_obs_pol.append(obs['CCHO_µg_per_m3'].values[m])
         conc_obs_tot.append(obs['OM_µg_per_m3'].values[m])
         conc_obs_pro.append(obs['CAA_µg_per_m3'].values[m])
         conc_obs_lip.append(obs['PG_µg_per_m3'].values[m])
         conc_obs_ss.append(obs['SS_µg_per_m3'].values[m])
+        conc_obs_oc.append(obs['OC_µg_per_m3'].values[m])
+
         if m < len(obs_tot['SS_µg_per_m3'].values):
             conc_obs_ss_tot.append(obs_tot['SS_µg_per_m3'].values[m])
         else:
@@ -324,6 +343,7 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
                           'conc_obs_lipi_sub': conc_obs_lip,
                           'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
+                          'conc_obs_oc': conc_obs_oc, 'conc_mod_oc': conc_model_oc,
                           'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot,
                           'Name_pro': name_pro, 'Name_lip': name_lip})
 

@@ -196,7 +196,7 @@ def pd_combine_pro_lip(conc_pd, plot_dir):
                                  -0.4)
 
 
-def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mac_na):
+def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mod_oc, obs_oc, mac_na):
     da_pd = da_pd_nan.dropna(subset=[obs])
     print(da_pd)
     # combining all omf obs and model into a datframe (new_omf_pol) for box plot
@@ -205,6 +205,8 @@ def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mac_na):
 
     obs_ss_pd = (list(da_pd[mod_ss].values) +
               list(da_pd[obs_ss].values))
+    obs_oc_pd = (list(da_pd[mod_oc].values) +
+              list(da_pd[obs_oc].values))
 
     id_all = (da_pd['ID'].to_list() +
               da_pd['ID'].to_list())
@@ -216,6 +218,7 @@ def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mac_na):
 
     new_omf_pd = pd.DataFrame({'Aerosol Concentration (µg m$^{-3}$)': obs_pd,
                                'SS Concentration (µg m$^{-3}$)': obs_ss_pd,
+                               'OC Concentration (µg m$^{-3}$)': obs_oc_pd,
                                'Measurements': id_all,
                                '': mod_obs,
                                'Macromolecules': mac})
@@ -267,6 +270,8 @@ def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
                                obs_key_na,
                                'conc_mod_ss',
                                'conc_obs_ss',
+                               'conc_mod_oc',
+                               'conc_obs_oc',
                                mac_names)
 
     if id_na == 'lipi':
@@ -277,8 +282,9 @@ def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
         conc_pd_to1 = rename_func(conc_pd, 'CVAO', 'CVAO   ')
         conc_pd_to2 = rename_func(conc_pd_to1, 'NAO', 'NAO ')
         conc_pd_new = rename_func(conc_pd_to2, 'WAP', 'WAP ')
-    if id_na == 'poly':
+    if id_na == 'poly' or id_na == 'oc':
         conc_pd_new = conc_pd
+
 
     # plot_functions.box_plot_vert(pd.concat([conc_pd_po, conc_pd_pr_new, conc_pd_li_new, conc_pd_to_new]),
     #                              mac_names, ['pol', 'pro', 'lip'],
