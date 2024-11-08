@@ -1,2 +1,9 @@
-
+log*
+myjob*
+*png
+*pdf
+*log
+pd_files
 /plots/*
+.idea/
+__pycache__/

@@ -1,8 +1,12 @@
-import mod_interp_obs_concat, global_vars, combine_pd
+import global_vars, combine_pd
 import os
 import pandas as pd
 exp = global_vars.exp_name
 data_dir = global_vars.data_directory
+if global_vars.exp_name != 'echam_base':
+    import mod_interp_obs_concat as mod_inter_obs
+else:
+    import mod_interp_obs_concat_echam_base as mod_inter_obs
 
 try:
     os.mkdir('plots')
@@ -19,13 +23,14 @@ plot_dir_sfc = plot_dir + 'Sfc_conc_plots/global_'
 
 
 def interp_piice_pascal(PI_ICE, PASCAL, pd_obs_mo_cvao):
-    pd_obs_mo_pi_ice = mod_interp_obs_concat.assign_loc_ship(data_dir,
+
+    pd_obs_mo_pi_ice = mod_inter_obs.assign_loc_ship(data_dir,
                                                              exp,
                                                              PI_ICE[0],
                                                              PI_ICE[1],
                                                              PI_ICE[3],
                                                              'WAP')
-    pd_obs_mo_pascal = mod_interp_obs_concat.assign_loc_ship(data_dir,
+    pd_obs_mo_pascal = mod_inter_obs.assign_loc_ship(data_dir,
                                                              exp,
                                                              PASCAL[0],
                                                              PASCAL[1],
@@ -33,17 +38,18 @@ def interp_piice_pascal(PI_ICE, PASCAL, pd_obs_mo_cvao):
                                                              'NAO')
     print('Finished interpolation WAP and NAO')
     conc_all_po = pd.concat([pd_obs_mo_pascal, pd_obs_mo_cvao, pd_obs_mo_pi_ice])
-    combine_pd.pd_combine_group(conc_all_po,
-                                'PCHO|CCHO',
-                                'conc_mod_poly',
-                                'conc_obs_poly_sub',
-                                'poly')
+    if global_vars.exp_name != 'echam_base':
+        combine_pd.pd_combine_group(conc_all_po,
+                                    'PCHO|CCHO',
+                                    'conc_mod_poly',
+                                    'conc_obs_poly_sub',
+                                    'poly')
 
-    combine_pd.pd_combine_group(conc_all_po,
-                                '(PCHO+DCAA+PL)|OM',
-                                'conc_mod_tot',
-                                'conc_obs_tot_sub',
-                                'tot')
+        combine_pd.pd_combine_group(conc_all_po,
+                                    '(PCHO+DCAA+PL)|OM',
+                                    'conc_mod_tot',
+                                    'conc_obs_tot_sub',
+                                    'tot')
 
     combine_pd.pd_combine_group(conc_all_po,
                                 'OC',
@@ -54,8 +60,9 @@ def interp_piice_pascal(PI_ICE, PASCAL, pd_obs_mo_cvao):
 def interp_svd_rs(SVAL_14, SVAL_15, SVAL_18, RS_18_20, pd_obs_mo_cvao):
     # pd_obs_mo_sval_18_19 = mod_interp_obs_concat.interp_conc_stations(data_dir, exp, SVAL_18_19[1], SVAL_18_19[2],
     #                                                                   'SVD18')
-
-    pd_obs_mo_sval_15 = mod_interp_obs_concat.interp_conc_stations(data_dir,
+    if global_vars.exp_name != 'echam_base':
+        import mod_interp_obs_concat as mod_inter_obs
+    pd_obs_mo_sval_15 = mod_inter_obs.interp_conc_stations(data_dir,
                                                                    exp,
                                                                    SVAL_15[1],
                                                                    SVAL_15[2],
@@ -92,17 +99,19 @@ def interp_svd_rs(SVAL_14, SVAL_15, SVAL_18, RS_18_20, pd_obs_mo_cvao):
                                 'prot')
 
 def interp_cvao(CVAO):
-    pd_obs_mo_cvao = mod_interp_obs_concat.interp_conc_stations(data_dir,
+
+    pd_obs_mo_cvao = mod_inter_obs.interp_conc_stations(data_dir,
                                                                 exp,
                                                                 CVAO[1],
                                                                 CVAO[2],
                                                                 'CVAO')
 
-    combine_pd.pd_combine_group(pd_obs_mo_cvao,
-                                'PL|\n(PG)',
-                                'conc_mod_lip',
-                                'conc_obs_lipi_sub',
-                                'lipi')
+    if global_vars.exp_name != 'echam_base':
+        combine_pd.pd_combine_group(pd_obs_mo_cvao,
+                                    'PL|\n(PG)',
+                                    'conc_mod_lip',
+                                    'conc_obs_lipi_sub',
+                                    'lipi')
     combine_pd.pd_combine_group(pd_obs_mo_cvao,
                                 'OC',
                                 'conc_mod_oc',

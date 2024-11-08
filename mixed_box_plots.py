@@ -125,10 +125,10 @@ def compute_aver_std(vals, val_na, i, id_biom):
         print("Model mean bias ", mean_bias, 'NMB ', NMB)
         #print((np.array(mod_sel_vals.values)[:len(obs_sel_vals.values)] - np.array(obs_sel_vals.values)).mean())
 
-
 if __name__ == '__main__':
     # data paths
     data_dir = "pd_files/"
+    with_oc = False   # False only PMOA should be considered, True it will compute PMOA+OC
 
     try:
         os.mkdir('plots')
@@ -156,9 +156,9 @@ if __name__ == '__main__':
 
         conc = pd.read_pickle(f'{data_dir}{v}_conc_{global_vars.exp_name}.pkl')
 
-# Comment this section if only PMOA should be considered, otherwise it will compute PMOA+OC
+# To consider PMOA+OC, with_oc must be True, otherwise only PMOA should be considered
 ############################################################################
-        if v == 'tot':
+        if v == 'tot' and with_oc:
             mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$',
                          '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$+OC)|OM$_{aer}$']
             fig_title = 'With_OC_All_groups'
@@ -174,7 +174,7 @@ if __name__ == '__main__':
                                                                'Aerosol Concentration (µg m$^{-3}$)'].to_list())
 
             print(conc['Aerosol Concentration (µg m$^{-3}$)'])
-            conc_oc.drop(columns = ['Aerosol Concentration (µg m$^{-3}$)'])
+            conc_oc.drop(columns = ['Aeçrosol Concentration (µg m$^{-3}$)'])
             conc_oc['Aerosol Concentration (µg m$^{-3}$)'] = (list(new_conc_om) +
                                                            conc_oc[conc_oc[''] == 'Observation'][
                                                                'Aerosol Concentration (µg m$^{-3}$)'].to_list())
