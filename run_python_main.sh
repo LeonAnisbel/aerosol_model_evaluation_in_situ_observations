@@ -18,6 +18,6 @@ ulimit -c 0
 
 echo "Start python script execution at $(date)"
 
-
-python -u main.py SVD
+python -u main_Arctic.py
+#python -u main.py SVD
 

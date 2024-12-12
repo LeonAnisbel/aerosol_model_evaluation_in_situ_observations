@@ -22,7 +22,7 @@ def read_model(path, exp, day, mo, yr, ext):
         data_ro = read_data_functions.read_model_spec_data(file_ro)
         t_len = len(data.time.values)
         ti_sel = [int(day+t_len/2)-2, int(day+t_len/2)-1]
-        #print(ti_sel)
+        print(ti_sel)
         da_ro, da_ds = [], []
         for ti in ti_sel:
             da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))

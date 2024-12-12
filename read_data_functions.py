@@ -1,6 +1,8 @@
 import xarray as xr
 import glob, os
 from matplotlib import cm
+
+import global_vars
 import mod_interp_obs_concat
 import plot_functions
 import numpy as np
@@ -12,8 +14,7 @@ import itertools
 ################################
 def read_obs_data_loc():
     #### Reading station locations
-    main_dir = '/work/bb1005/b381361/echam_postproc/'
-    plot_dir = '../OMF_plots/'
+    main_dir = global_vars.main_data_dir
     loc_dir = 'Aerosol_sample_coordinates/'
     files = ['PASCAL_lat_lon_aer.csv', 'PI_ICE_lat_lon_aer.csv']
     pol_data = 'AER_OMF_pol_lip_pro_all_sizes.csv'
@@ -90,6 +91,30 @@ def read_obs_data_loc():
     SVAL_18 = [data_SVAL, data_SVAL_18_subm, data_SVAL_18_tot]
 
     return dates, PASCAL, PI_ICE, CVAO, SVAL_14, SVAL_15, SVAL_18, data_RS
+
+
+
+def read_data():
+    da_dir = global_vars.main_data_dir+'PMOAseasalt.csv'
+    data_all = codecs.open(da_dir,
+                           'r')
+    data = pd.read_csv(data_all, sep=',')
+    data_15 = data[['date', 'seasalt', 'MOA']].copy(deep=True)
+
+    data_15['OMF'] = (data_15['MOA'].values /
+                      (data_15['MOA'].values +
+                       data_15['seasalt'].values * (1 / 0.3061)))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)
+
+    data_15.loc[:, ('date')] = data_15['date'].apply(pd.to_datetime, dayfirst=True)
+
+    times = pd.to_datetime(data_15['date'], dayfirst=True)
+
+    data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'MOA', 'OMF']]
+                  .mean())
+    days = [i[2] for i in data_15_hr.index]
+    months = [i[1] for i in data_15_hr.index]
+    years = [i[0] for i in data_15_hr.index]
+    return data_15_hr, days,months,years
 
 
 def read_model_spec_data(file):

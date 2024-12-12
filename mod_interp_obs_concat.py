@@ -358,3 +358,57 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
         pd_da_18.to_pickle(f'pd_files/prot_conc_{ID}.pkl')
 
     return pd_da
+
+
+
+def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
+    id_camp = []
+    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
+    conc_model_ss, conc_model_omf, conc_model_ss_tot = [], [], []
+    conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot = [], [], [], []
+    conc_obs_ss, conc_obs_omf, conc_obs_ss_tot = [], [], []
+
+    path = global_vars.data_directory
+
+    for m, da_st in enumerate(years):
+
+        mod_data, mod_ro_da = utils_func.read_model(path,
+                                                    exp,
+                                                    days[m],
+                                                    months[m],
+                                                    years[m],
+                                                    'tracer')
+
+        interp_lim_start = get_interp_fixed_loc(lon,
+                                                lat,
+                                                mod_data,
+                                                mod_ro_da)
+
+        conc_model_pol.append(interp_lim_start[0])
+        conc_model_pro.append(interp_lim_start[1])
+        conc_model_lip.append(interp_lim_start[2])
+        conc_model_tot.append(np.sum(interp_lim_start[0] +
+                                     interp_lim_start[1] +
+                                     interp_lim_start[2]))
+        conc_model_ss.append(interp_lim_start[3])
+
+        conc_model_ss_tot.append(interp_lim_start[5])
+
+        conc_obs_tot.append(obs['MOA'].values[m])
+        conc_obs_ss.append(obs['seasalt'].values[m])
+        # conc_obs_omf.append(obs['OMF'].values[m])
+
+
+        id_camp.append(ID)
+
+    print(len(conc_obs_pol), len(conc_model_pol), '\n', conc_obs_pol, conc_model_pol)
+
+    pd_da = pd.DataFrame({'ID': id_camp,
+                          'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
+                          'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
+                          # 'conc_obs_omf': conc_obs_omf, 'conc_mod_omf': conc_model_omf,
+                          'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot})
+
+    pd_da['Date'] = months
+
+    return pd_da
