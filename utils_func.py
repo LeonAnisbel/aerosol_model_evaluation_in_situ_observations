@@ -20,8 +20,10 @@ def read_model(path, exp, day, mo, yr, ext):
         print('reading ', files, 'for interpolation with data month = ', mo)
         data = read_data_functions.read_model_spec_data(files)
         data_ro = read_data_functions.read_model_spec_data(file_ro)
-        ti_sel = [day*2-1, day*2]
-        print(ti_sel)
+        t_len = len(data.time.values)
+        #ti_sel = [int(day+t_len/2)-2, int(day+t_len/2)-1]
+        ti_sel = [day*2-1, day*2-2]
+        print(data.time.values[ti_sel], ti_sel)
         da_ro, da_ds = [], []
         for ti in ti_sel:
             da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))
