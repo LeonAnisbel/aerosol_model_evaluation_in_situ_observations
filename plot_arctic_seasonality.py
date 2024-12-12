@@ -11,11 +11,13 @@ def plot_MC15():
     fig, ax = plt.subplots(2,1)
     ax.flatten()
     obs_MH_15, _, _, _ = read_data_functions.read_data()
-    obs_MH_15['seasalt_model'] = data['conc_mod_ss_tot']
-    obs_MH_15['MOA_model'] = data['conc_mod_tot']
+    obs_MH_15['seasalt_model'] = data['conc_mod_ss'].values
+    obs_MH_15['MOA_model'] = data['conc_mod_tot'].values
+    obs_MH_15.rename(columns={'seasalt':'seasalt_obs', 'MOA':'MOA_obs'}, inplace=True)
 
-    data_ss = obs_MH_15[['seasalt_model', 'seasalt']].copy(deep=True)
-    data_moa = obs_MH_15[['MOA_model', 'MOA']].copy(deep=True)
+    data_ss = obs_MH_15[['seasalt_model', 'seasalt_obs']].copy(deep=True)
+    data_moa = obs_MH_15[['MOA_model', 'MOA_obs']].copy(deep=True)
+
 
     data_ss.plot.bar(ax = ax[0])
     data_moa.plot.bar(ax = ax[1])
