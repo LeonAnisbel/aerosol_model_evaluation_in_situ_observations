@@ -5,7 +5,7 @@ import read_data_functions
 from scipy.interpolate import griddata
 
 
-def read_model(path, exp, day, mo, yr, ext):
+def read_model(path, exp, day, mo, yr, ext, monthly=False):
     data_dir = f"{path}"
     if mo < 10:
         mo_str = f'0{mo}'
@@ -20,16 +20,19 @@ def read_model(path, exp, day, mo, yr, ext):
         print('reading ', files, 'for interpolation with data month = ', mo)
         data = read_data_functions.read_model_spec_data(files)
         data_ro = read_data_functions.read_model_spec_data(file_ro)
-        t_len = len(data.time.values)
-        #ti_sel = [int(day+t_len/2)-2, int(day+t_len/2)-1]
-        ti_sel = [day*2-1, day*2-2]
-        print(data.time.values[ti_sel], ti_sel)
+
         da_ro, da_ds = [], []
-        for ti in ti_sel:
-            da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))
-            da_ds.append(data.isel(time=ti).isel(lev=46))
-        da_m_ro = xr.concat(da_ro, dim='time')
-        da_m_ds = xr.concat(da_ds, dim='time')
+        if monthly:
+            da_m_ro = data_ro['rhoam1'].isel(lev=46)
+            da_m_ds = data.isel(lev=46)
+        else:
+            ti_sel = [day * 2 - 1, day * 2 - 2]  # based on a 12h output
+            print(data.time.values[ti_sel], ti_sel)
+            for ti in ti_sel:
+                da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))
+                da_ds.append(data.isel(time=ti).isel(lev=46))
+            da_m_ro = xr.concat(da_ro, dim='time')
+            da_m_ds = xr.concat(da_ds, dim='time')
 
     return da_m_ds, da_m_ro
 
@@ -65,21 +68,21 @@ def get_mod_box(dr_aer, lat_obs, lon_obs):
     return model_lo_la_notnan, model_data_notnan
 
 
-def start_interp(mod_data, mod_ro_da, var_names, lon_btw, lat_btw, mi_ma_lon, mi_ma_lat):
+def start_interp(mod_data, mod_ro_da, var_names, lon_btw, lat_btw, mi_ma_lon, mi_ma_lat, all_modes=False):
     interp_var_list = {}
     for va_na in var_names:
         interp_var_list[va_na] = interp_func(mod_data, mod_ro_da, va_na,
                                              lon_btw, lat_btw, mi_ma_lon,
-                                             mi_ma_lat)
+                                             mi_ma_lat, all_modes=all_modes)
 
     interp_var_list['SS_tot'] = interp_func(mod_data, mod_ro_da, 'SS',
                                        lon_btw, lat_btw, mi_ma_lon,
-                                       mi_ma_lat, both_modes=True)
+                                       mi_ma_lat, all_modes=True)
     return interp_var_list
 
 
-def interp_func(mod_ds, mod_dr_ro, var, obs_lon, obs_lat, obs_lon_mi_ma, obs_lat_mi_ma, both_modes=False):
-    if both_modes:
+def interp_func(mod_ds, mod_dr_ro, var, obs_lon, obs_lat, obs_lon_mi_ma, obs_lat_mi_ma, all_modes=False):
+    if all_modes:
         dr_var = (mod_ds[f'{var}_AS'] + mod_ds[f'{var}_CS'])
     else:
         dr_var = mod_ds[f'{var}_AS']

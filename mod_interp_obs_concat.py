@@ -12,7 +12,7 @@ def datetime_to_integer(dt_time):
     return pd.to_datetime(dt_time).astype(int) * 1e9  # 10000*dt_time.year + 100*dt_time.month + dt_time.day
 
 
-def get_interp_fixed_loc(lo, la, mod_da, mod_ro_da):
+def get_interp_fixed_loc(lo, la, mod_da, mod_ro_da, all_modes=False):
     mi_ma_lon, mi_ma_lat = [lo, lo], [la, la]
 
     interp_vars = utils_func.start_interp(mod_da,
@@ -21,7 +21,8 @@ def get_interp_fixed_loc(lo, la, mod_da, mod_ro_da):
                                           lo,
                                           la,
                                           mi_ma_lon,
-                                          mi_ma_lat)
+                                          mi_ma_lat,
+                                          all_modes = all_modes)
     return (interp_vars['POL'][0][0],
             interp_vars['PRO'][0][0],
             interp_vars['LIP'][0][0],
@@ -390,6 +391,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
         conc_model_tot.append(np.sum(interp_lim_start[0] +
                                      interp_lim_start[1] +
                                      interp_lim_start[2]))
+
         conc_model_ss.append(interp_lim_start[3])
 
         conc_model_ss_tot.append(interp_lim_start[5])
@@ -407,5 +409,46 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
                           'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss_tot, 'conc_mod_ss': conc_model_ss_tot,})
                           # 'conc_obs_omf': conc_obs_omf, 'conc_mod_omf': conc_model_omf,
+
+    return pd_da
+
+
+def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
+    id_camp = []
+    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
+    conc_obs_tot = []
+    conc_model_oc = []
+    path = global_vars.data_directory
+
+    for m, da_st in enumerate(years):
+        for mo in months:
+            mod_data, mod_ro_da = utils_func.read_model(path,
+                                                        exp,
+                                                        days,
+                                                        mo,
+                                                        years[m],
+                                                        'tracer',
+                                                        monthly=True)
+            interp_lim_start = get_interp_fixed_loc(lon,
+                                                    lat,
+                                                    mod_data,
+                                                    mod_ro_da,
+                                                    all_modes=True)
+
+            conc_model_pol.append(interp_lim_start[0])
+            conc_model_pro.append(interp_lim_start[1])
+            conc_model_lip.append(interp_lim_start[2])
+            conc_model_oc.append(interp_lim_start[4])
+
+            conc_model_tot.append(np.sum(interp_lim_start[0] +
+                                         interp_lim_start[1] +
+                                         interp_lim_start[2]))
+
+            conc_obs_tot.append(obs['PBOA_ug_m3'].values[m])
+
+            id_camp.append(ID)
+
+    pd_da = pd.DataFrame({'ID': id_camp,
+                          'conc_obs_tot': conc_obs_tot, 'conc_mod_tot': conc_model_tot})
 
     return pd_da
