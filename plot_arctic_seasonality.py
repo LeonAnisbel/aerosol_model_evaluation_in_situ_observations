@@ -25,3 +25,37 @@ def plot_MC15():
     fig.tight_layout()
     plt.savefig(f'plots/MH15_conc_{global_vars.exp_name}.png')
 
+
+def plot_all_arctic_stations():
+    data = pd.read_pickle(f'pd_files/all_arctic_stations_conc_{global_vars.exp_name}.pkl')
+    print(data.head())
+    data_mo_all_stations, dict_metadata = read_data_functions.read_PMOA_all_stations()
+    stat_list = list(dict_metadata.keys())
+    data_mo_all_stations, dict_metadata = read_data_functions.read_PMOA_all_stations()
+    data.drop('conc_obs_tot', axis=1, inplace=True)
+    data['conc_obs_tot'] = data_mo_all_stations['PBOA_ug_m3'].values
+    data.set_index('months', inplace=True)
+
+
+    fig, ax = plt.subplots(len(stat_list),1, figsize=(12, 20))
+    ax.flatten()
+    for idx, sta in enumerate(stat_list):
+        #print(sta, data[['ID']==sta])
+        data[data['ID']==sta].plot(ax = ax[idx])
+        ax[idx].set_title(sta, loc='center')
+    fig.tight_layout()
+    plt.savefig(f'plots/all_arctic_stations_conc_bar_{global_vars.exp_name}.png')
+
+    fig, ax = plt.subplots(1,1)
+    data_mod = data[['ID', 'conc_mod_tot']]
+    data_obs = data[['ID', 'conc_obs_tot']]
+
+    m = data_mod.plot(style='-', ax = ax) #'.-'
+    o = data_obs.plot(style='--', ax = ax) #'.-'
+    fig.legend()
+    plt.savefig(f'plots/all_arctic_stations_conc_{global_vars.exp_name}.png')
+
+
+
+if __name__ == '__main__':
+    plot_all_arctic_stations()
