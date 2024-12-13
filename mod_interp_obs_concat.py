@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from sympy.physics.units import years
+
 import read_data_functions
 import os
 import xarray as xr
@@ -415,13 +417,15 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
 
 def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
     id_camp = []
-    conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
+    conc_model_tot = []
     conc_obs_tot = []
-    conc_model_oc = []
+    conc_model_pol_m, conc_model_pro_m, conc_model_lip_m = [], [], []
+    conc_model_tot_m, conc_model_oc_m = [], []
+
     path = global_vars.data_directory
 
-    for m, da_st in enumerate(years):
-        for mo in months:
+    for midx, mo in enumerate(months):
+        for m, da_st in enumerate(years):
             mod_data, mod_ro_da = utils_func.read_model(path,
                                                         exp,
                                                         days,
@@ -435,20 +439,23 @@ def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
                                                     mod_ro_da,
                                                     all_modes=True)
 
-            conc_model_pol.append(interp_lim_start[0])
-            conc_model_pro.append(interp_lim_start[1])
-            conc_model_lip.append(interp_lim_start[2])
-            conc_model_oc.append(interp_lim_start[4])
+            conc_model_pol_m.append(interp_lim_start[0])
+            conc_model_pro_m.append(interp_lim_start[1])
+            conc_model_lip_m.append(interp_lim_start[2])
+            conc_model_oc_m.append(interp_lim_start[4])
 
-            conc_model_tot.append(np.sum(interp_lim_start[0] +
-                                         interp_lim_start[1] +
-                                         interp_lim_start[2]))
+            conc_model_tot_m.append(np.sum([interp_lim_start[0],
+                                         interp_lim_start[1],
+                                         interp_lim_start[2]]))
 
-            conc_obs_tot.append(obs['PBOA_ug_m3'].values[m])
-
-            id_camp.append(ID)
+        lens = len(conc_model_tot_m)
+        conc_model_tot.append(np.sum(conc_model_tot_m)/lens)
+        conc_obs_tot.append(obs['PBOA_ug_m3'].values[midx])
+        id_camp.append(ID)
 
     pd_da = pd.DataFrame({'ID': id_camp,
-                          'conc_obs_tot': conc_obs_tot, 'conc_mod_tot': conc_model_tot})
+                          'months': months,
+                          'years': [str(years[0])+'-'+str(years[-1]) for m in months],
+                          'conc_obs_tot': conc_obs_tot, 'conc_mod_tot': conc_model_tot,})
 
     return pd_da
