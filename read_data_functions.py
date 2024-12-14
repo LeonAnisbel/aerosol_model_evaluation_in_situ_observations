@@ -125,24 +125,21 @@ def read_PMOA_all_stations():
     data_sel['PBOA_ug_m3'] = data_sel['PBOA_ng_m-3']*1e-3 # convert to ug/m3
     data_sel['Median date'] = data_sel['Median date'].apply(pd.to_datetime, dayfirst=False)
     times = pd.to_datetime(data_sel['Median date'], dayfirst=True)
-    data_sel_mo = (data_sel.groupby(['Station','Latitude','Longitude', times.dt.month])[['PBOA_ug_m3']]
-                  .mean())
-    data_sel_yr = ((data_sel.groupby(['Station','Latitude','Longitude', times.dt.year, times.dt.month])[['PBOA_ug_m3']])
-                   .mean())
 
-   # create dictionary with stations metadata
+    data_sel_yr = (
+        (data_sel.groupby(['Station', 'Latitude', 'Longitude', times.dt.year, times.dt.month])[['PBOA_ug_m3']])
+        .median())
+
+    # create dictionary with stations metadata
     stations = list(set([i[0] for i in data_sel_yr.index]))
     stations.sort()
     dict_yr = {}
     for sta in stations:
         dict_yr[sta] = {}
-        dict_yr[sta]['location'] = list(set([(i[1], i[2]) for i in data_sel_yr.index if i[0]==sta]))
-        dict_yr[sta]['years'] = list(set([i[3] for i in data_sel_yr.index if i[0]==sta]))
-        dict_yr[sta]['years'].sort()
-        dict_yr[sta]['months'] = list(set([i[4] for i in data_sel_yr.index if i[0]==sta]))
-        dict_yr[sta]['months'].sort()
-    return data_sel_mo, dict_yr
-
+        dict_yr[sta]['location'] = list(set([(i[1], i[2]) for i in data_sel_yr.index if i[0] == sta]))
+        dict_yr[sta]['years'] = list([i[3] for i in data_sel_yr.index if i[0]==sta])
+        dict_yr[sta]['months'] = list([i[4] for i in data_sel_yr.index if i[0]==sta])
+    return data_sel_yr, dict_yr
 
 
 def read_model_spec_data(file):

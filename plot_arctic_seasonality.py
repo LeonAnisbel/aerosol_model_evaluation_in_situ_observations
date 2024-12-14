@@ -34,7 +34,13 @@ def plot_all_arctic_stations():
     data_mo_all_stations, dict_metadata = read_data_functions.read_PMOA_all_stations()
     data.drop('conc_obs_tot', axis=1, inplace=True)
     data['conc_obs_tot'] = data_mo_all_stations['PBOA_ug_m3'].values
-    data.set_index('months', inplace=True)
+    date_list = [str(i)+'-'+str(j) for i,j in zip(data['years'].values,data['months'].values)]
+    print(date_list)
+    data['date']=date_list
+    data.drop('years',  axis=1, inplace=True)
+    data.drop('months', axis=1, inplace=True)
+
+    data.set_index('date', inplace=True)
 
 
     fig, ax = plt.subplots(len(stat_list),1, figsize=(12, 20))
@@ -47,15 +53,21 @@ def plot_all_arctic_stations():
     plt.savefig(f'plots/all_arctic_stations_conc_bar_{global_vars.exp_name}.png')
 
     fig, ax = plt.subplots(1,1)
-    data_mod = data[['ID', 'conc_mod_tot']]
-    data_obs = data[['ID', 'conc_obs_tot']]
+    obs_leg = []
+    mod_leg = []
+    for idx, sta in enumerate(stat_list):
+        data_mod = data[['ID', 'conc_mod_tot']]
+        data_obs = data[['ID', 'conc_obs_tot']]
+        m = data_mod[data['ID']==sta].plot(style='-', ax=ax)  # '.-'
+        o = data_obs[data['ID']==sta].plot(style='--', ax=ax)  # '.-'
+        obs_leg.append(o)
+        mod_leg.append(m)
 
-    m = data_mod.plot(style='-', ax = ax) #'.-'
-    o = data_obs.plot(style='--', ax = ax) #'.-'
-    fig.legend()
+    fig.legend(handles=obs_leg, labels=stat_list)
     plt.savefig(f'plots/all_arctic_stations_conc_{global_vars.exp_name}.png')
 
 
 
 if __name__ == '__main__':
     plot_all_arctic_stations()
+    plot_MC15()

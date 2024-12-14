@@ -89,7 +89,7 @@ def interp_func(mod_ds, mod_dr_ro, var, obs_lon, obs_lat, obs_lon_mi_ma, obs_lat
 
     unit_factor = 1e9
     dr_aer = dr_var * mod_dr_ro * unit_factor
-    dr_aer = dr_aer.mean(dim='time', skipna=True)
+    dr_aer = dr_aer.median(dim='time', skipna=True)
 
     points, values = get_mod_box(dr_aer, obs_lat_mi_ma, obs_lon_mi_ma)
     grid_lon, grid_lat = np.meshgrid(obs_lon, obs_lat)
