@@ -129,6 +129,8 @@ def read_PMOA_all_stations():
     data_sel_yr = (
         (data_sel.groupby(['Station', 'Latitude', 'Longitude', times.dt.year, times.dt.month])[['PBOA_ug_m3']])
         .median())
+    data_sel_std = ((data_sel.groupby(['Station','Latitude','Longitude', times.dt.year, times.dt.month])[['PBOA_ug_m3']])
+                   .std())
 
     # create dictionary with stations metadata
     stations = list(set([i[0] for i in data_sel_yr.index]))
@@ -139,7 +141,7 @@ def read_PMOA_all_stations():
         dict_yr[sta]['location'] = list(set([(i[1], i[2]) for i in data_sel_yr.index if i[0] == sta]))
         dict_yr[sta]['years'] = list([i[3] for i in data_sel_yr.index if i[0]==sta])
         dict_yr[sta]['months'] = list([i[4] for i in data_sel_yr.index if i[0]==sta])
-    return data_sel_yr, dict_yr
+    return data_sel_yr, dict_yr, data_sel_std
 
 
 def read_model_spec_data(file):

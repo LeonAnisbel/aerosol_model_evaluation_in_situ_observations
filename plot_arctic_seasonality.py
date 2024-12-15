@@ -29,11 +29,17 @@ def plot_MC15():
 def plot_all_arctic_stations():
     data = pd.read_pickle(f'pd_files/all_arctic_stations_conc_{global_vars.exp_name}.pkl')
     print(data.head())
-    data_mo_all_stations, dict_metadata = read_data_functions.read_PMOA_all_stations()
+    data_mo_all_stations, dict_metadata, data_sel_std = read_data_functions.read_PMOA_all_stations()
     stat_list = list(dict_metadata.keys())
-    data_mo_all_stations, dict_metadata = read_data_functions.read_PMOA_all_stations()
-    data.drop('conc_obs_tot', axis=1, inplace=True)
-    data['conc_obs_tot'] = data_mo_all_stations['PBOA_ug_m3'].values
+
+    #data.drop('conc_obs_tot', axis=1, inplace=True)
+    #data['conc_obs_tot'] = data_mo_all_stations['PBOA_ug_m3'].values
+    data_std = pd.DataFrame()
+    data_std['ID'] = data['ID'].values
+    data_std['obs_std_fill_min'] = [val-std for val,std in zip(data_mo_all_stations['PBOA_ug_m3'].values, data_sel_std['PBOA_ug_m3'].values)]
+    data_std['obs_std_fill_max'] = [val+std for val,std in zip(data_mo_all_stations['PBOA_ug_m3'].values, data_sel_std['PBOA_ug_m3'].values)]
+
+
     date_list = [str(i)+'-'+str(j) for i,j in zip(data['years'].values,data['months'].values)]
     print(date_list)
     data['date']=date_list
@@ -48,9 +54,15 @@ def plot_all_arctic_stations():
     for idx, sta in enumerate(stat_list):
         #print(sta, data[['ID']==sta])
         data[data['ID']==sta].plot(ax = ax[idx])
+        data_std_sta = data_std[data_std['ID']==sta]
+        ax[idx].fill_between(data[data['ID']==sta].index,
+                         data_std_sta['obs_std_fill_min'].values,
+                         data_std_sta['obs_std_fill_max'].values,
+                         facecolor='lightblue')
         ax[idx].set_title(sta, loc='center')
     fig.tight_layout()
     plt.savefig(f'plots/all_arctic_stations_conc_bar_{global_vars.exp_name}.png')
+    plt.close()
 
     fig, ax = plt.subplots(1,1)
     obs_leg = []

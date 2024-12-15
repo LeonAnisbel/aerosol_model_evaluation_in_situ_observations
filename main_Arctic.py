@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 
 if sys.argv[1] == 'all':
-    data_mo_all_stations, dict_metadata = read_data_functions.read_PMOA_all_stations()
+    data_mo_all_stations, dict_metadata, _ = read_data_functions.read_PMOA_all_stations()
     data_sta_list = []
     for sta in list(dict_metadata.keys()):
         dict_metadata[sta]['model_PMOA'] = mod_interp_obs_concat.interp_all_arctic_stations('ac3_arctic',
