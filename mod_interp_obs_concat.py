@@ -369,7 +369,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
     conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
     conc_model_ss, conc_model_omf, conc_model_ss_tot = [], [], []
     conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot = [], [], [], []
-    conc_obs_ss, conc_obs_omf, conc_obs_ss_tot = [], [], []
+    conc_obs_ss, conc_obs_omf = [], []
 
     path = global_vars.data_directory
 
@@ -386,7 +386,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
                                                 lat,
                                                 mod_data,
                                                 mod_ro_da,
-                                                all_modes=True)
+                                                all_modes=False)
 
         conc_model_pol.append(interp_lim_start[0])
         conc_model_pro.append(interp_lim_start[1])
@@ -399,8 +399,8 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
 
         conc_model_ss_tot.append(interp_lim_start[5])
 
-        conc_obs_tot.append(obs['MOA'].values[m])
-        conc_obs_ss_tot.append(obs['seasalt'].values[m])
+        conc_obs_tot.append(obs['MOAnew'].values[m])
+        conc_obs_ss.append(obs['seasalt'].values[m])
         # conc_obs_omf.append(obs['OMF'].values[m])
 
 
@@ -410,7 +410,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
 
     pd_da = pd.DataFrame({'ID': id_camp,
                           'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
-                          'conc_obs_ss': conc_obs_ss_tot, 'conc_mod_ss': conc_model_ss_tot,})
+                          'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,})
                           # 'conc_obs_omf': conc_obs_omf, 'conc_mod_omf': conc_model_omf,
 
     return pd_da

@@ -99,18 +99,18 @@ def read_data():
     data_all = codecs.open(da_dir,
                            'r')
     data = pd.read_csv(data_all, sep=',')
-    data_15 = data[['date', 'seasalt', 'MOA']].copy(deep=True)
+    data_15 = data[['date', 'seasalt', 'MOAnew']].copy(deep=True)
 
-    data_15['OMF'] = (data_15['MOA'].values /
-                      (data_15['MOA'].values +
-                       data_15['seasalt'].values * (1 / 0.3061)))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)
+    data_15['OMF'] = (data_15['MOAnew'].values /
+                      (data_15['MOAnew'].values +
+                       data_15['seasalt'].values))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)
 
     data_15.loc[:, ('date')] = data_15['date'].apply(pd.to_datetime, dayfirst=True)
 
     times = pd.to_datetime(data_15['date'], dayfirst=True)
 
-    data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'MOA', 'OMF']]
-                  .mean())
+    data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'MOAnew', 'OMF']]
+                  .median())
     days = [i[2] for i in data_15_hr.index]
     months = [i[1] for i in data_15_hr.index]
     years = [i[0] for i in data_15_hr.index]
