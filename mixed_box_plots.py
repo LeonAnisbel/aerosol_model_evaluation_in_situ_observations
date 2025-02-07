@@ -6,50 +6,39 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 import OC_plots
+import read_data_functions
 import SS_plots
 import global_vars
-
-
-def rename_func(data_pd, col, na, new_na):
-    pd_new = data_pd
-    list_col = data_pd[col].to_list()
-    for i in range(len(list_col)):
-        if list_col[i] == na:
-            list_col[i] = new_na
-    pd_new = pd_new.drop(columns=col)
-    pd_new[col] = list_col
-
-    return pd_new
-
-
-def add_text(ax, mol_name, loc1, loc2):
-    ax.text(loc1, loc2,
-            mol_name,
-            fontsize='14',
-            weight='bold',
-            bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
-
+import utils_plots
 
 def box_plot_vert(dict_df, mol_name, ID, title, lim):
     # Create new plot
     #print(ID, list(dict_df["Measurements"]))
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=(12,8))#15, 8
     # YlGnBu
     states_palette = sns.color_palette("seismic", n_colors=4)
     my_pal = {"Model offline OMF": "skyblue",
               "ECHAM-HAM aerosol concentration": "pink",
               "Observation OMF": "royalblue",
               "Observation aerosol concentration": "palevioletred"}
+    l_extra = list(my_pal.keys())
+    my_pal_keys_list = [[l_extra[0], l_extra[2]],
+                        [l_extra[1], l_extra[3]]]
     # Plot with seaborn
     # df = df.drop(df[df.score < 50].index)
     col_na = "Aerosol OMF"
     # df = df.drop(df[df.score < 50].index)
     dict_df = dict_df.drop(dict_df[dict_df[col_na] < 0].index)
     # print(svd["Aerosol OMF & Concentration (µg m$^{-3}$)"].values)
-    bx = sns.boxplot(data=dict_df, x="Measurements",
-                     y="Aerosol OMF", hue="",
+    flier = utils_plots.get_marker_flier()
+    bx = sns.boxplot(data=dict_df,
+                     x="Measurements",
+                     y="Aerosol OMF",
+                     hue="",
                      palette=my_pal,
+                     flierprops=flier,
                      width=.7)
+
     # The box shows the quartiles of the
     # dataset while the whiskers extend to
     # show the rest of the distribution,
@@ -57,14 +46,33 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
     # to be “outliers” using a method that
     # is a function of the inter-quartile range.
 
-    add_text(ax, mol_name[0], 0.3, 4)
-    add_text(ax, mol_name[1], 2.9, 4)
-    add_text(ax, mol_name[2], 4.6, 4)
-    add_text(ax, mol_name[3], 5.8, 4)
+    utils_plots.add_species_text_name(ax, mol_name[0], 0.3, 4, 14)
+    utils_plots.add_species_text_name(ax, mol_name[1], 2.9, 4, 14)
+    utils_plots.add_species_text_name(ax, mol_name[2], 4.63, 4, 14)
+    # utils_plots.add_species_text_name(ax, mol_name[3], 5.8, 4, 14)
 
-    # plot_text(dict_macrom[0], ax, ID[0], 0.1, 2, 50, 'PCHO')
-    # plot_text(dict_macrom[1], ax, ID[1], 5, 7, 50, 'DCAA')
-    # # plot_text(dict_macrom[2], ax, ID[2], 10, 9.6, 20, 'PL')
+
+    stat_pos= [-0.1, 0.9, 1.9, 2.9, 3.9,  4.9]
+    stat_names = ['NAO', 'CVAO', 'WAP',  'CVAO  ','SVD', 'CVAO ']
+    for i, stat in enumerate(stat_names):
+        print('\n', '\n')
+        print(stat, '\n')
+        df_stat = dict_df[dict_df["Measurements"] == stat]
+        n = len(df_stat[df_stat[""]==my_pal_keys_list[-1][-1]]["Aerosol OMF"])
+        formatted_pvalues = (f'n = {np.round(n, 2)} ')
+        ax.text(stat_pos[i], 0.000008, formatted_pvalues, fontsize=8)
+
+        for var in my_pal_keys_list:
+            print(stat, var, '\n')
+            obs = df_stat[df_stat[""]==var[1]]["Aerosol OMF"].values
+            mod = df_stat[df_stat[""]==var[0]]["Aerosol OMF"].values
+
+            RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs, mod)
+            formatted_pvalues = (f'RMSE= {np.round(RMSE, 4)}, bias= {np.round(mean_bias, 4)} '
+                                 ,f'R= {np.round(R, 4)},  NMB= {np.round(NMB, 4)} '
+                                 ,f' pval= {np.round(pval, 2)}')
+            print(formatted_pvalues, '\n')
+
 
     # Customizing axes
     ax.tick_params(axis='both', labelsize='14')
@@ -74,7 +82,7 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
     ax.grid(linestyle='--', linewidth=0.4)
     ax.set_ylim(lim)
 
-    plt.legend(loc="lower right", fontsize='14')  # bbox_to_anchor=(1.04, 1),
+    plt.legend(loc="lower left", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 
     # create secondary axis
     ax2 = ax.twinx()
@@ -86,49 +94,74 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
     ax2.set_ylabel('Concentration (µg m$^{-3}$)', fontsize=14)
 
     # color axis
-    ax.spines['left'].set_color('royalblue')
-    ax.yaxis.label.set_color('royalblue')
-    ax.tick_params(axis='y', colors='royalblue')
-
-    ax2.spines['right'].set_color('palevioletred')
+    # ax2.spines['right'].set_color('palevioletred')
     ax2.yaxis.label.set_color('palevioletred')
     ax2.tick_params(axis='y', colors='palevioletred')
+
+    # ax.spines['left'].set_color('royalblue')
+    ax.yaxis.label.set_color('royalblue')
+    ax.tick_params(axis='y', colors='royalblue')
 
     # dotted lines to separate groups
     ax.axvline(2.5, color=".3", dashes=(2, 2))
     ax.axvline(4.5, color=".3", dashes=(2, 2))
-    ax.axvline(5.55, color=".3", dashes=(2, 2))
+    # ax.axvline(5.55, color=".3", dashes=(2, 2))
 
 
     plt.savefig(f'plots/mixed_omf_conc_{title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
     plt.show()
 
+def box_plot_vert_OM(dict_df, mol_name, ID, title, lim):
+    font = 10
+    fig, ax = plt.subplots(figsize=(5, 4))
 
-# Press the green button in the gutter to run the script.
-def compute_aver_std(vals, val_na, i, id_biom):
-    print('\n', val_na)
-    cases = ['Model', 'Observation']
-    for sta in station_names[i]:
-        sel_vals = vals[vals['Measurements'] == sta]
-        mod_sel_vals = sel_vals[sel_vals[""] == cases[0]][val_na]
-        aver = mod_sel_vals.median()
-        std = mod_sel_vals.std()
-        print('Model', id_biom, sta, '\n', len(mod_sel_vals), aver, std, '\n', '\n')
+    new_meas_vals = []
+    for i in dict_df[''].values:
+        if i == 'ECHAM-HAM aerosol concentration':
+            i_new = 'Model'
+        if i == 'Observation aerosol concentration':
+            i_new = 'Observations'
+        new_meas_vals.append(i_new)
+    dict_df.drop(columns=[''])
+    dict_df[''] = new_meas_vals
 
-        obs_sel_vals = sel_vals[sel_vals[""] == cases[1]][val_na]
-        aver = obs_sel_vals.mean()
-        std = obs_sel_vals.std()
-        print('Observation', id_biom, sta, '\n', len(obs_sel_vals), aver, std, '\n', '\n')
-        diff = (np.array(mod_sel_vals.values) - np.array(obs_sel_vals.values))
-        mean_bias = np.nanmean(diff)
-        NMB = np.nanmean(diff/np.array(obs_sel_vals.values))
-        print("Model mean bias ", mean_bias, 'NMB ', NMB)
-        #print((np.array(mod_sel_vals.values)[:len(obs_sel_vals.values)] - np.array(obs_sel_vals.values)).mean())
+    my_pal = {"Model": "pink",
+              "Observations": "palevioletred"}
+
+    col_na = "Aerosol Concentration (µg m$^{-3}$)"
+    dict_df = dict_df.drop(dict_df[dict_df[col_na] < 0].index)
+    bx = sns.boxplot(data=dict_df,
+                     x="Measurements",
+                     y=col_na,
+                     hue="",
+                     palette=my_pal,
+                     width=.5)
+
+    utils_plots.add_species_text_name(ax, mol_name, 0.02, 4, font)
+
+    # Customizing axes
+    ax.tick_params(axis='both', labelsize=font)
+    ax.yaxis.get_label().set_fontsize(font)
+    ax.set_xlabel('', fontsize=font)
+    ax.set_yscale('log')
+    ax.grid(linestyle='--', linewidth=0.4)
+    ax.set_ylim(lim)
+    ax.set_ylabel('Aerosol concentration (µg m$^{-3}$)', fontsize=font)
+
+    plt.legend(loc="lower left", fontsize=font)  # bbox_to_anchor=(1.04, 1),
+
+    ax.spines['left'].set_color('palevioletred')
+    ax.yaxis.label.set_color('palevioletred')
+    ax.tick_params(axis='y', colors='palevioletred')
+
+    plt.tight_layout()
+    plt.savefig(f'plots/mixed_conc_{title}_OC_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
+    plt.show()
 
 if __name__ == '__main__':
     # data paths
     data_dir = "pd_files/"
-    with_oc = False   # False only PMOA should be considered, True it will compute PMOA+OC
+    with_oc = True   # False only PMOA should be considered, True it will compute PMOA+OC
 
     try:
         os.mkdir('plots')
@@ -137,10 +170,10 @@ if __name__ == '__main__':
         pass
 
     var = ['poly', 'prot', 'lipi', 'tot']  #
-    mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$',
-                 '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$)|OM$_{aer}$']  #
+    mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$'
+                ,'(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$)|OM$_{aer}$']  #
     station_names = [['NAO', 'CVAO', 'WAP'],  #
-                     ['SVD14', 'SVD15', 'SVD18', 'CVAO  ', 'RS'],  #
+                     ['SVD14', 'SVD', 'SVD18', 'CVAO  ', 'RS'],  #
                      ['CVAO '],
                      ['NAO ', 'CVAO   ', 'WAP ']]  #
     fig_title = 'All_groups'
@@ -149,8 +182,19 @@ if __name__ == '__main__':
     for i, v in enumerate(var):
         omf = pd.read_pickle(f'{data_dir}{v}_omf.pkl')
 
-        omf_rename = rename_func(omf, '', 'Model', 'Model offline OMF')
-        omf_rename = rename_func(omf_rename, '', 'Observation', 'Observation OMF')
+        if v == 'prot':
+            stat_names = []
+            for stat in omf["Measurements"]:
+                stat_new = stat
+                if stat == 'SVD15':
+                    stat_new = 'SVD'
+                stat_names.append(stat_new)
+            omf.drop("Measurements", axis=1, inplace=True)
+            omf['Measurements'] = stat_names
+
+
+        omf_rename = utils_plots.rename_func(omf, '', 'Model', 'Model offline OMF')
+        omf_rename = utils_plots.rename_func(omf_rename, '', 'Observation', 'Observation OMF')
         omf_rename = omf_rename.rename(columns={'Aerosol OMF':
                                                     'Aerosol OMF'})
 
@@ -159,31 +203,64 @@ if __name__ == '__main__':
 # To consider PMOA+OC, with_oc must be True, otherwise only PMOA should be considered
 ############################################################################
         if v == 'tot' and with_oc:
+            main_dir = './'
+            loc_dir = ''
+
+            _, PASCAL, PI_ICE, CVAO, _, _, _, _ = read_data_functions.read_obs_data_loc(main_dir, loc_dir)
+            pd_concat = pd.concat([PASCAL[1]['OC_µg_per_m3'], CVAO[1]['OC_µg_per_m3'], PI_ICE[1]['OC_µg_per_m3']]).to_list()
+            pd_concat = [i*2 for i in pd_concat]
+            obs_oc_conc = pd.DataFrame(data = {'OC observation': pd_concat})
+            obs_oc_conc.dropna(inplace=True)
+
+
+
             mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$',
                          '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$+OC)|OM$_{aer}$']
             fig_title = 'With_OC_All_groups'
 
             conc_oc = pd.read_pickle(f'{data_dir}oc_conc_{global_vars.exp_name}.pkl')
-            OC_plots.plot_oc(conc_oc, 'OC')
-            print(conc)
+            conc_oc_mod = conc_oc[conc_oc[''] == 'Model']['OC Concentration (µg m$^{-3}$)'].to_list()
+            #conc_oc_mod_25 = [i-i*0.25 for i in conc_oc[conc_oc[''] == 'Model']['OC Concentration (µg m$^{-3}$)'].to_list()]
+            #conc_oc_mod = conc_oc_mod_25
+
+            conc_oc_pmoa_mod = [i + j for i, j in zip(conc_oc_mod,conc[conc[''] == 'Model']['Aerosol Concentration (µg m$^{-3}$)'].values)]
+            meas_name_mod = ['Model' for i in range(len(conc_oc_mod))]
+            meas_name_obs = ['Observation' for i in range(len(obs_oc_conc['OC observation'].to_list()))]
+
+            name_sta = [sta  for sta in conc_oc[conc_oc[''] == 'Model']['Measurements']]
+
+            conc_oc_om = pd.DataFrame(data={'Measurements': name_sta+name_sta,
+                                      '':meas_name_mod+ meas_name_obs,
+                                      'OC Aerosol concentration':conc_oc_mod +  obs_oc_conc['OC observation'].to_list(),
+                                      'Aerosol Concentration (µg m$^{-3}$)': conc_oc_pmoa_mod+obs_oc_conc['OC observation'].to_list()}
+                                      )
+
+            conc_oc['PMOA Aerosol concentration'] = conc['Aerosol Concentration (µg m$^{-3}$)'].values
+            conc_oc['OC Aerosol concentration'] = conc_oc['Aerosol Concentration (µg m$^{-3}$)'].values
+
+            # print(conc_oc[conc_oc[''] == 'Model']['Aerosol Concentration (µg m$^{-3}$)'],
+            #       conc_oc[conc_oc[''] == 'Model']['OC Concentration (µg m$^{-3}$)'], )
+            # # OC_plots.plot_oc(conc_oc, 'OC')
+
             new_conc_om = (conc_oc[conc_oc['']=='Model']['Aerosol Concentration (µg m$^{-3}$)'].values +
                            conc[conc_oc['']=='Model']['Aerosol Concentration (µg m$^{-3}$)'].values)
+
             conc.drop(columns = ['Aerosol Concentration (µg m$^{-3}$)'])
             conc['Aerosol Concentration (µg m$^{-3}$)'] = (list(new_conc_om) +
                                                            conc[conc[''] == 'Observation'][
                                                                'Aerosol Concentration (µg m$^{-3}$)'].to_list())
 
-            print(conc['Aerosol Concentration (µg m$^{-3}$)'])
-            conc_oc.drop(columns = ['Aeçrosol Concentration (µg m$^{-3}$)'])
+            conc_oc.drop(columns = ['Aerosol Concentration (µg m$^{-3}$)'])
             conc_oc['Aerosol Concentration (µg m$^{-3}$)'] = (list(new_conc_om) +
                                                            conc_oc[conc_oc[''] == 'Observation'][
                                                                'Aerosol Concentration (µg m$^{-3}$)'].to_list())
-            OC_plots.plot_oc(conc_oc, 'OC+PMOA')
-            # exit()
+            # print(conc_oc[conc_oc[''] == 'Observation']['OC Aerosol concentration'].values)
+            # print(conc_oc[conc_oc[''] == 'Observation']['Measurements'].values)
+            OC_plots.plot_oc(conc_oc_om, 'OC+PMOA')
 ############################################################################
 
-        conc_rename = rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
-        conc_rename = rename_func(conc_rename, '', 'Observation', 'Observation aerosol concentration')
+        conc_rename = utils_plots.rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
+        conc_rename = utils_plots.rename_func(conc_rename, '', 'Observation', 'Observation aerosol concentration')
         all_conc.append(conc_rename)
         conc_rename = conc_rename.rename(columns={'Aerosol Concentration (µg m$^{-3}$)':
                                                       'Aerosol OMF'})  #'Aerosol Concentration (µg m$^{-3}$)
@@ -191,16 +268,23 @@ if __name__ == '__main__':
         mix = pd.concat([omf_rename, conc_rename])
         mix_omf_conc.append(mix)
 
-        compute_aver_std(conc, 'Aerosol Concentration (µg m$^{-3}$)', i, v)
+        # compute_aver_std(conc, 'Aerosol Concentration (µg m$^{-3}$)', i, v)
         print('\n', '\n')
-        compute_aver_std(omf, 'Aerosol OMF', i, v)
+        # compute_aver_std(omf, 'Aerosol OMF', i, v)
 
 
 
     SS_plots.plot_ss(pd.concat(all_conc[:-1]))
 
     box_plot_vert(pd.concat([mix_omf_conc[0], mix_omf_conc[1],
-                             mix_omf_conc[2], mix_omf_conc[3]]),
-                  mac_names, ['pol', 'pro', 'lip'],
-                  fig_title, [1e-6, 1e1])
+                             mix_omf_conc[2]]),
+                              mac_names, ['pol', 'pro', 'lip'],
+                              fig_title, [1e-7, 1e1])
+
+    # if with_oc:
+    #     box_plot_vert_OM(all_conc[-1],
+    #                   mac_names[-1],
+    #                   station_names[-1],
+    #                   fig_title,
+    #                   [1e-3, 1e1])
 

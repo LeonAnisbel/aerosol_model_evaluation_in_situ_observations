@@ -1,21 +1,13 @@
 import xarray as xr
-import glob, os
-from matplotlib import cm
-
 import global_vars
-import mod_interp_obs_concat
-import plot_functions
-import numpy as np
 import codecs
 import pandas as pd
 import itertools
 
 
 ################################
-def read_obs_data_loc():
+def read_obs_data_loc(main_dir, loc_dir):
     #### Reading station locations
-    main_dir = global_vars.main_data_dir
-    loc_dir = 'Aerosol_sample_coordinates/'
     files = ['PASCAL_lat_lon_aer.csv', 'PI_ICE_lat_lon_aer.csv']
     pol_data = 'AER_OMF_pol_lip_pro_all_sizes.csv'
 

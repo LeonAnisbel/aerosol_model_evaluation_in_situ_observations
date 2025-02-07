@@ -10,8 +10,11 @@ if __name__ == '__main__':
     exp = global_vars.exp_name
     data_dir = global_vars.data_directory
 
+    main_dir = global_vars.main_data_dir
+    loc_dir = 'Aerosol_sample_coordinates/'
+
     dates, PASCAL, PI_ICE, CVAO, SVAL_14, SVAL_15, SVAL_18, RS_18_20 = (
-        read_data_functions.read_obs_data_loc())
+        read_data_functions.read_obs_data_loc(main_dir, loc_dir))
     pd_obs_mo_cvao = var_executor.interp_cvao(CVAO)
 
     if sys.argv[1] == 'SVD':
