@@ -32,11 +32,11 @@ def interp_piice_pascal(PI_ICE, PASCAL, pd_obs_mo_cvao):
                                     'conc_obs_poly_sub',
                                     'poly')
 
-        combine_pd.pd_combine_group(conc_all_po,
-                                    '(PCHO+DCAA+PL)|OM',
-                                    'conc_mod_tot',
-                                    'conc_obs_tot_sub',
-                                    'tot')
+        # combine_pd.pd_combine_group(conc_all_po,
+        #                             '(PCHO+DCAA+PL)|OM',
+        #                             'conc_mod_tot',
+        #                             'conc_obs_tot_sub',
+        #                             'tot')
 
     combine_pd.pd_combine_group(conc_all_po,
                                 'OC',
@@ -52,7 +52,7 @@ def interp_svd_rs(SVAL_15, pd_obs_mo_cvao):
                                                            exp,
                                                            SVAL_15[1],
                                                            SVAL_15[2],
-                                                           'SVD15')
+                                                           'SVD')
 
 
     print('Finished interpolation SVD')
@@ -79,11 +79,11 @@ def interp_cvao(CVAO):
                                     'conc_mod_lip',
                                     'conc_obs_lipi_sub',
                                     'lipi')
-    combine_pd.pd_combine_group(pd_obs_mo_cvao,
-                                'OC',
-                                'conc_mod_oc',
-                                'conc_obs_oc',
-                                'oc')
+    # combine_pd.pd_combine_group(pd_obs_mo_cvao,
+    #                             'OC',
+    #                             'conc_mod_oc',
+    #                             'conc_obs_oc',
+    #                             'oc')
 
     print('Finished interpolation CVAO ')
     return pd_obs_mo_cvao

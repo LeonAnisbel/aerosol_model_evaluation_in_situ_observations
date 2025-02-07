@@ -62,8 +62,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     conc_model_pol, conc_model_pro, conc_model_lip, conc_model_oc = [], [], [], []
     conc_model_ss, conc_model_ss_tot, conc_model_tot = [], [], []
 
-    conc_obs_pol_sub, conc_obs_tot_sub = [], []
-    conc_obs_pol_sup, conc_obs_tot_sup = [], []
+    conc_obs_pol_sub = []
 
     conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_oc = [], [], [], []
     conc_obs_ss, conc_obs_ss_tot, conc_obs_tot = [], [], []
@@ -201,7 +200,6 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
         end_4_mod.append(ds_lim['End Date/Time'].values[i])
 
         conc_obs_pol_sub.append(ds_sub['CCHO_µg_per_m3'].values[i])
-        conc_obs_tot_sub.append(ds_sub['OM_µg_per_m3'].values[i])
         conc_obs_pro.append(ds_sub['CAA_µg_per_m3'].values[i])
         conc_obs_lip.append(ds_sub['PG_µg_per_m3'].values[i])
         conc_obs_oc.append(ds_sub['OC_µg_per_m3'].values[i])
@@ -239,8 +237,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
                           'conc_mod_poly': conc_model_pol, 'conc_mod_pro': conc_model_pro,
                           'conc_mod_lip': conc_model_lip,
                           'conc_obs_poly_sub': conc_obs_pol_sub, 'conc_obs_prot_sub': conc_obs_pro,
-                          'conc_obs_lipi_sub': conc_obs_lip,
-                          'conc_obs_tot_sub': conc_obs_tot_sub, 'conc_mod_tot': conc_model_tot,
+                          'conc_obs_lipi_sub': conc_obs_lip, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
                           'conc_obs_oc': conc_obs_oc, 'conc_mod_oc': conc_model_oc,
                           'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot,
@@ -319,7 +316,6 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
         conc_model_ss_tot.append(interp_lim_start[5])
 
         conc_obs_pol.append(obs['CCHO_µg_per_m3'].values[m])
-        conc_obs_tot.append(obs['OM_µg_per_m3'].values[m])
         conc_obs_pro.append(obs['CAA_µg_per_m3'].values[m])
         conc_obs_lip.append(obs['PG_µg_per_m3'].values[m])
         conc_obs_ss.append(obs['SS_µg_per_m3'].values[m])
@@ -343,8 +339,7 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
                           'conc_mod_poly': conc_model_pol, 'conc_mod_pro': conc_model_pro,
                           'conc_mod_lip': conc_model_lip,
                           'conc_obs_poly_sub': conc_obs_pol, 'conc_obs_prot_sub': conc_obs_pro,
-                          'conc_obs_lipi_sub': conc_obs_lip,
-                          'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
+                          'conc_obs_lipi_sub': conc_obs_lip, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
                           'conc_obs_oc': conc_obs_oc, 'conc_mod_oc': conc_model_oc,
                           'conc_obs_ss_tot': conc_obs_ss_tot, 'conc_mod_ss_tot': conc_model_ss_tot,
@@ -408,8 +403,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
 
     print(len(conc_obs_pol), len(conc_model_pol), '\n', conc_obs_pol, conc_model_pol)
 
-    pd_da = pd.DataFrame({'ID': id_camp,
-                          'conc_obs_tot_sub': conc_obs_tot, 'conc_mod_tot': conc_model_tot,
+    pd_da = pd.DataFrame({'ID': id_camp, 'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,})
                           # 'conc_obs_omf': conc_obs_omf, 'conc_mod_omf': conc_model_omf,
 

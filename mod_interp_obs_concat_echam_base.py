@@ -54,8 +54,6 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     conc_model_oc = []
     conc_model_ss, conc_model_ss_tot = [], []
 
-    conc_obs_tot_sub = []
-    conc_obs_tot_sup = []
 
     conc_obs_oc = []
     conc_obs_ss, conc_obs_ss_tot = [], []
@@ -174,7 +172,6 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
         start_4_mod.append(ds_lim['Start Date/Time'].values[i])
         end_4_mod.append(ds_lim['End Date/Time'].values[i])
 
-        conc_obs_tot_sub.append(ds_sub['OM_µg_per_m3'].values[i])
         conc_obs_oc.append(ds_sub['OC_µg_per_m3'].values[i])
         conc_obs_ss.append(ds_sub['SS_µg_per_m3'].values[i])
         if i < len(ds_lim['SS_µg_per_m3'].values):
