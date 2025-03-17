@@ -5,15 +5,15 @@ import matplotlib.pyplot as plt
 import read_data_functions
 
 
-def plot_MC15():
-    data = pd.read_pickle(f'pd_files/MH15_conc_{global_vars.exp_name}.pkl')
+def plot_MC15(yr):
+    data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
     print(data.head())
     fig, ax = plt.subplots(2,1)
     ax.flatten()
-    obs_MH_15, _, _, _ = read_data_functions.read_data()
+    obs_MH_15, _, _, _ = read_data_functions.read_data(yr)
     obs_MH_15['seasalt_model'] = data['conc_mod_ss'].values
     obs_MH_15['MOA_model'] = data['conc_mod_tot'].values
-    obs_MH_15.rename(columns={'seasalt':'seasalt_obs', 'MOAnew':'MOA_obs'}, inplace=True)
+    obs_MH_15.rename(columns={'seasalt':'seasalt_obs', 'PMOA':'MOA_obs'}, inplace=True)
 
     data_ss = obs_MH_15[['seasalt_model', 'seasalt_obs']].copy(deep=True)
     data_moa = obs_MH_15[['MOA_model', 'MOA_obs']].copy(deep=True)
@@ -23,7 +23,7 @@ def plot_MC15():
     data_moa.plot(ax = ax[1])
 
     fig.tight_layout()
-    plt.savefig(f'plots/MH15_conc_{global_vars.exp_name}.png')
+    plt.savefig(f'plots/MH{yr}_conc_{global_vars.exp_name}.png')
 
 
 def plot_all_arctic_stations():
@@ -97,7 +97,9 @@ def plot_all_arctic_stations():
 
 if __name__ == '__main__':
     plot_all_arctic_stations()
-    plot_MC15()
+    year = '2018'
+    print('start seasonality 2018')
+    plot_MC15(year)
 
 
 

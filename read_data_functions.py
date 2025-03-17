@@ -86,26 +86,29 @@ def read_obs_data_loc(main_dir, loc_dir):
 
 
 
-def read_data():
-    da_dir = global_vars.main_data_dir+'PMOAseasalt.csv'
+def read_data(yr):
+    da_dir = global_vars.main_data_dir+'MH_PMOAseasalt_'+yr+'.csv'
+#    da_dir = '/home/manuel/Downloads/'+'MH_PMOAseasalt_'+yr+'.csv'
+
     data_all = codecs.open(da_dir,
                            'r')
     data = pd.read_csv(data_all, sep=',')
-    data_15 = data[['date', 'seasalt', 'MOAnew']].copy(deep=True)
+    data_15 = data[['date', 'seasalt', 'PMOA']].copy(deep=True)
 
-    data_15['OMF'] = (data_15['MOAnew'].values /
-                      (data_15['MOAnew'].values +
+    data_15['OMF'] = (data_15['PMOA'].values /
+                      (data_15['PMOA'].values +
                        data_15['seasalt'].values))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)
 
     data_15.loc[:, ('date')] = data_15['date'].apply(pd.to_datetime, dayfirst=True)
 
     times = pd.to_datetime(data_15['date'], dayfirst=True)
 
-    data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'MOAnew', 'OMF']]
+    data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'PMOA', 'OMF']]
                   .median())
     days = [i[2] for i in data_15_hr.index]
     months = [i[1] for i in data_15_hr.index]
     years = [i[0] for i in data_15_hr.index]
+
     return data_15_hr, days,months,years
 
 

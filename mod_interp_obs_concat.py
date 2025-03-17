@@ -1,9 +1,5 @@
 import pandas as pd
 import numpy as np
-from sympy.physics.units import years
-
-import read_data_functions
-import os
 import xarray as xr
 import utils_func
 import global_vars
@@ -394,7 +390,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
 
         conc_model_ss_tot.append(interp_lim_start[5])
 
-        conc_obs_tot.append(obs['MOAnew'].values[m])
+        conc_obs_tot.append(obs['PMOA'].values[m])
         conc_obs_ss.append(obs['seasalt'].values[m])
         # conc_obs_omf.append(obs['OMF'].values[m])
 
