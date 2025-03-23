@@ -8,7 +8,7 @@ import read_data_functions
 
 def plot_MC_monthly_seasonality(yr):
     data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
-    fig, ax = plt.subplots(2,1, figsize=(6,10))
+    fig, ax = plt.subplots(3,1, figsize=(6,15))
     ax.flatten()
 
     _, _, months, _, _ = read_data_functions.read_data(yr)
@@ -30,19 +30,27 @@ def plot_MC_monthly_seasonality(yr):
     obs_MH_15['Model (SS)'] = ss_vals
     obs_MH_15['Model (PMOA)'] = moa_vals
 
-    obs_MH_15.rename(columns={'seasalt':'Observations (SS)', 'PMOA':'Observations (PMOA)'}, inplace=True)
-
+    obs_MH_15.rename(columns={'seasalt':'Observations (SS)',
+                              'PMOA':'Observations (PMOA)',
+                              'OMF': 'Observations (OMF)'}, inplace=True)
     data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
     data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
 
+    # Read OMF and add it to plot
+    data_omf = pd.read_pickle(f'pd_files/tot_omf_MH.pkl')
+    times = pd.to_datetime(data_omf['Start Date/Time'], dayfirst=True)
+    data_omf_monthly = data_omf.groupby([times.dt.year, times.dt.month])[['OMF_mod_tot']].mean()
+    obs_MH_15['Model (OMF)'] = data_omf_monthly['OMF_mod_tot'].values
+    data_omf = obs_MH_15[['Model (OMF)', 'Observations (OMF)']].copy(deep=True)
 
-    def fill_between(axs, data, std, c):
-        min, max = ([i-j for i,j in zip(data.values, std)],
-                    [i+j for i,j in zip(data.values, std)])
-        axs.fill_between(np.arange(0,12),
-                            min, max,
-                           facecolor=c,
-                             alpha=0.1)
+    def fill_between(axs, data, std, c, plot_std=True):
+        if plot_std:
+            min, max = ([i-j for i,j in zip(data.values, std)],
+                        [i+j for i,j in zip(data.values, std)])
+            axs.fill_between(np.arange(0,12),
+                                min, max,
+                               facecolor=c,
+                                 alpha=0.1)
 
     data_ss.plot(ax = ax[0], color = ['b', 'r'])
     fill_between(ax[0],data_ss['Observations (SS)'], obs_MH_15_std['seasalt'].values, 'r')
@@ -59,12 +67,17 @@ def plot_MC_monthly_seasonality(yr):
     ax[1].set_title('PMOA')
     ax[1].set_ylabel('Concentration (ug m$^{-3}$)')
 
+    data_omf.plot(ax = ax[2], color = ['b', 'r'])
+    fill_between(ax[2], data_omf['Observations (OMF)'], obs_MH_15_std['OMF'].values, 'r')
+    fill_between(ax[2], data_omf['Model (OMF)'], [], 'b', plot_std=False)
+    ax[2].set_xlabel(' ')
+    ax[2].set_title('OMF')
+    ax[2].set_ylabel('OMF')
 
 #    ax[0].semilogy()
- #   ax[1].semilogy()
 
     fig.tight_layout()
-    #plt.show()
+    plt.show()
     plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png')
 
 
@@ -75,17 +88,16 @@ def plot_MC_daily_seasonality(yr):
     obs_MH_15, _, _, _, _ = read_data_functions.read_data(yr)
     obs_MH_15['Model (SS)'] = data['conc_mod_ss'].values
     obs_MH_15['Model (PMOA)'] = data['conc_mod_tot'].values
-    obs_MH_15.rename(columns={'seasalt':'Observations (SS)', 'PMOA':'Observations (PMOA)'}, inplace=True)
+    obs_MH_15.rename(columns={'seasalt':'Observations (SS)',
+                              'PMOA':'Observations (PMOA)'}, inplace=True)
 
     data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
     data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
-
 
     data_ss.plot(ax = ax[0], color = ['b', 'r'])
     ax[0].set_title('Sea salt')
     ax[0].set_xlabel(' ')
     ax[0].set_ylabel('Concentration (ug m$^{-3}$)')
-
 
     data_moa.plot(ax = ax[1], color = ['b', 'r'])
     ax[1].set_xlabel(' ')
