@@ -86,9 +86,9 @@ def read_obs_data_loc(main_dir, loc_dir):
 
 
 
-def read_data(yr):
+def read_data(yr, monthly=False):
     da_dir = global_vars.main_data_dir+'MH_PMOAseasalt_'+yr+'.csv'
-#    da_dir = '/home/manuel/Downloads/'+'MH_PMOAseasalt_'+yr+'.csv'
+    #da_dir = '/home/manuel/Downloads/'+'MH_PMOAseasalt_'+yr+'.csv'
 
     data_all = codecs.open(da_dir,
                            'r')
@@ -103,13 +103,24 @@ def read_data(yr):
 
     times = pd.to_datetime(data_15['date'], dayfirst=True)
 
-    data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'PMOA', 'OMF']]
+    if monthly:
+        days = []
+        data_15_hr = (data_15.groupby([times.dt.year, times.dt.month])[['seasalt', 'PMOA', 'OMF']]
+                      .mean())
+        data_15_std = (data_15.groupby([times.dt.year, times.dt.month])[['seasalt', 'PMOA', 'OMF']]
+                      .std())
+    else:
+        data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'PMOA', 'OMF']]
                   .median())
-    days = [i[2] for i in data_15_hr.index]
+        data_15_std = (data_15.groupby([times.dt.year, times.dt.month])[['seasalt', 'PMOA', 'OMF']]
+                      .std())
+        days = [i[2] for i in data_15_hr.index]
+
     months = [i[1] for i in data_15_hr.index]
     years = [i[0] for i in data_15_hr.index]
+    print(data_15_hr)
 
-    return data_15_hr, days,months,years
+    return data_15_hr, days,months,years, data_15_std
 
 
 def read_PMOA_all_stations():

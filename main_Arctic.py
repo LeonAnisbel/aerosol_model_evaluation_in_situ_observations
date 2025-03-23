@@ -24,7 +24,7 @@ if sys.argv[1] == 'all':
 
 if sys.argv[1] == 'MH':
     year = '2018'
-    data_MH_15, days,months,years = read_data_functions.read_data(year)
+    data_MH_15, days,months,years, _ = read_data_functions.read_data(year, monthly=True)
     lat, lon = 53.3333, -9.9 % 360
     pd_MH15 = mod_interp_obs_concat.interp_conc_arctic_stations('ac3_arctic',
                                                       data_MH_15,

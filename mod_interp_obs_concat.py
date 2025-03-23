@@ -361,7 +361,7 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
     conc_model_ss, conc_model_omf, conc_model_ss_tot = [], [], []
     conc_obs_pol, conc_obs_pro, conc_obs_lip, conc_obs_tot = [], [], [], []
     conc_obs_ss, conc_obs_omf = [], []
-
+    years_list, months_list, days_list = [], [], []
     path = global_vars.data_directory
 
     for m, da_st in enumerate(years):
@@ -394,13 +394,21 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
         conc_obs_ss.append(obs['seasalt'].values[m])
         # conc_obs_omf.append(obs['OMF'].values[m])
 
+        years_list.append(years[m])
+        months_list.append(months[m])
+        days_list.append(days[m])
 
         id_camp.append(ID)
 
     print(len(conc_obs_pol), len(conc_model_pol), '\n', conc_obs_pol, conc_model_pol)
 
-    pd_da = pd.DataFrame({'ID': id_camp, 'conc_mod_tot': conc_model_tot,
-                          'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,})
+    pd_da = pd.DataFrame({'ID': id_camp,
+                          'days': days_list,
+                          'months': months_list,
+                          'years': years_list,
+                          'conc_mod_tot': conc_model_tot,
+                          'conc_obs_ss': conc_obs_ss,
+                          'conc_mod_ss': conc_model_ss,})
                           # 'conc_obs_omf': conc_obs_omf, 'conc_mod_omf': conc_model_omf,
 
     return pd_da

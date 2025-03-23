@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import global_vars
 import matplotlib.pyplot as plt
@@ -5,25 +6,95 @@ import matplotlib.pyplot as plt
 import read_data_functions
 
 
-def plot_MC15(yr):
+def plot_MC_monthly_seasonality(yr):
     data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
-    print(data.head())
-    fig, ax = plt.subplots(2,1)
+    fig, ax = plt.subplots(2,1, figsize=(6,10))
     ax.flatten()
-    obs_MH_15, _, _, _ = read_data_functions.read_data(yr)
-    obs_MH_15['seasalt_model'] = data['conc_mod_ss'].values
-    obs_MH_15['MOA_model'] = data['conc_mod_tot'].values
-    obs_MH_15.rename(columns={'seasalt':'seasalt_obs', 'PMOA':'MOA_obs'}, inplace=True)
 
-    data_ss = obs_MH_15[['seasalt_model', 'seasalt_obs']].copy(deep=True)
-    data_moa = obs_MH_15[['MOA_model', 'MOA_obs']].copy(deep=True)
+    _, _, months, _, _ = read_data_functions.read_data(yr)
+    obs_MH_15, _, _, _, obs_MH_15_std = read_data_functions.read_data(yr, monthly=True)
+
+    data['months'] = months
+    data_month_mean = []
+    data_month_std = []
+    for i in np.arange(1,13):
+        data_mean = data.loc[(data['months']==i), ('conc_mod_ss', 'conc_mod_tot')].mean()
+        data_std = data.loc[(data['months']==i), ('conc_mod_ss', 'conc_mod_tot')].std()
+
+        data_month_mean.append(data_mean.values)
+        data_month_std.append(data_std.values)
+
+    ss_vals, moa_vals = [i[0] for i in data_month_mean],  [i[1] for i in data_month_mean]
+    ss_std, moa_std = [i[0] for i in data_month_std],  [i[1] for i in data_month_std]
+
+    obs_MH_15['Model (SS)'] = ss_vals
+    obs_MH_15['Model (PMOA)'] = moa_vals
+
+    obs_MH_15.rename(columns={'seasalt':'Observations (SS)', 'PMOA':'Observations (PMOA)'}, inplace=True)
+
+    data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
+    data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
 
 
-    data_ss.plot(ax = ax[0])
-    data_moa.plot(ax = ax[1])
+    def fill_between(axs, data, std, c):
+        min, max = ([i-j for i,j in zip(data.values, std)],
+                    [i+j for i,j in zip(data.values, std)])
+        axs.fill_between(np.arange(0,12),
+                            min, max,
+                           facecolor=c,
+                             alpha=0.1)
+
+    data_ss.plot(ax = ax[0], color = ['b', 'r'])
+    fill_between(ax[0],data_ss['Observations (SS)'], obs_MH_15_std['seasalt'].values, 'r')
+    fill_between(ax[0], data_ss['Model (SS)'], ss_std, 'b')
+    ax[0].set_title('Sea salt')
+    ax[0].set_xlabel(' ')
+    ax[0].set_ylabel('Concentration (ug m$^{-3}$)')
+
+
+    data_moa.plot(ax = ax[1], color = ['b', 'r'])
+    fill_between(ax[1], data_moa['Observations (PMOA)'], obs_MH_15_std['PMOA'].values, 'r')
+    fill_between(ax[1], data_moa['Model (PMOA)'], moa_std, 'b')
+    ax[1].set_xlabel(' ')
+    ax[1].set_title('PMOA')
+    ax[1].set_ylabel('Concentration (ug m$^{-3}$)')
+
+
+#    ax[0].semilogy()
+ #   ax[1].semilogy()
 
     fig.tight_layout()
-    plt.savefig(f'plots/MH{yr}_conc_{global_vars.exp_name}.png')
+    #plt.show()
+    plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png')
+
+
+def plot_MC_daily_seasonality(yr):
+    data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
+    fig, ax = plt.subplots(2,1, figsize=(10,5))
+    ax.flatten()
+    obs_MH_15, _, _, _, _ = read_data_functions.read_data(yr)
+    obs_MH_15['Model (SS)'] = data['conc_mod_ss'].values
+    obs_MH_15['Model (PMOA)'] = data['conc_mod_tot'].values
+    obs_MH_15.rename(columns={'seasalt':'Observations (SS)', 'PMOA':'Observations (PMOA)'}, inplace=True)
+
+    data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
+    data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
+
+
+    data_ss.plot(ax = ax[0], color = ['b', 'r'])
+    ax[0].set_title('Sea salt')
+    ax[0].set_xlabel(' ')
+    ax[0].set_ylabel('Concentration (ug m$^{-3}$)')
+
+
+    data_moa.plot(ax = ax[1], color = ['b', 'r'])
+    ax[1].set_xlabel(' ')
+    ax[1].set_title('PMOA')
+    ax[1].set_ylabel('Concentration (ug m$^{-3}$)')
+
+    fig.tight_layout()
+    plt.savefig(f'plots/MH{yr}_conc_daily_{global_vars.exp_name}.png')
+
 
 
 def plot_all_arctic_stations():
@@ -97,9 +168,12 @@ def plot_all_arctic_stations():
 
 if __name__ == '__main__':
     plot_all_arctic_stations()
-    year = '2018'
-    print('start seasonality 2018')
-    plot_MC15(year)
+    print('start seasonality at MH')
+    plot_MC_monthly_seasonality('2018')
+    plot_MC_daily_seasonality('2018')
+
+    plot_MC_daily_seasonality('2015')
+
 
 
 
