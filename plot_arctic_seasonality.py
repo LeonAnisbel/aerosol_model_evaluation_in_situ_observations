@@ -77,7 +77,6 @@ def plot_MC_monthly_seasonality(yr):
 #    ax[0].semilogy()
 
     fig.tight_layout()
-    plt.show()
     plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png')
 
 

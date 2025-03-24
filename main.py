@@ -13,7 +13,7 @@ if __name__ == '__main__':
     main_dir = global_vars.main_data_dir
     loc_dir = 'Aerosol_sample_coordinates/'
 
-    dates, PASCAL, PI_ICE, CVAO, SVAL_14, SVAL_15, SVAL_18, RS_18_20 = (
+    dates, PASCAL, PI_ICE, CVAO, SVAL_15 = (
         read_data_functions.read_obs_data_loc(main_dir, loc_dir))
     pd_obs_mo_cvao = var_executor.interp_cvao(CVAO)
 

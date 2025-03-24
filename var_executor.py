@@ -50,8 +50,8 @@ def interp_svd_rs(SVAL_15, pd_obs_mo_cvao):
         import mod_interp_obs_concat as mod_inter_obs
     pd_obs_mo_sval_15 = mod_inter_obs.interp_conc_stations(data_dir,
                                                            exp,
+                                                           SVAL_15[0],
                                                            SVAL_15[1],
-                                                           SVAL_15[2],
                                                            'SVD')
 
 
@@ -69,8 +69,8 @@ def interp_svd_rs(SVAL_15, pd_obs_mo_cvao):
 def interp_cvao(CVAO):
     pd_obs_mo_cvao = mod_inter_obs.interp_conc_stations(data_dir,
                                                         exp,
+                                                        CVAO[0],
                                                         CVAO[1],
-                                                        CVAO[2],
                                                         'CVAO')
 
     if global_vars.exp_name != 'echam_base':

@@ -206,13 +206,11 @@ if __name__ == '__main__':
             main_dir = './'
             loc_dir = ''
 
-            _, PASCAL, PI_ICE, CVAO, _, _, _, _ = read_data_functions.read_obs_data_loc(main_dir, loc_dir)
-            pd_concat = pd.concat([PASCAL[1]['OC_µg_per_m3'], CVAO[1]['OC_µg_per_m3'], PI_ICE[1]['OC_µg_per_m3']]).to_list()
+            _, PASCAL, PI_ICE, CVAO, _ = read_data_functions.read_obs_data_loc(main_dir, loc_dir)
+            pd_concat = pd.concat([PASCAL[1]['OC_µg_per_m3'], CVAO[0]['OC_µg_per_m3'], PI_ICE[1]['OC_µg_per_m3']]).to_list()
             pd_concat = [i*2 for i in pd_concat]
             obs_oc_conc = pd.DataFrame(data = {'OC observation': pd_concat})
             obs_oc_conc.dropna(inplace=True)
-
-
 
             mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$',
                          '(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$+OC)|OM$_{aer}$']

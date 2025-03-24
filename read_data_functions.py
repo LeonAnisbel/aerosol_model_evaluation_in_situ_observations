@@ -38,32 +38,21 @@ def read_obs_data_loc(main_dir, loc_dir):
     data_PI_ICE_tot = data[data['Station_sizes'] == 'PI-ICE_0.05_10']  # data for all aerosol sizes
 
     # Save data for PASCAL
-    # data_PASCAL = data[24:33]
     data_PASCAL_subm_1 = data[data['Station_sizes'] == 'PASCAL_0.05_1.2']  # data for submicron aerosol size
     data_PASCAL_subm_2 = data[data['Station_sizes'] == 'PASCAL_0.14_1.2']  # data for submicron aerosol size
     data_PASCAL_super = data[data['Station_sizes'] == 'PASCAL_1.2_10']  # data for supermicron aerosol size
     data_PASCAL_tot = data[data['Station_sizes'] == 'PASCAL_0.05_10']  # data for all aerosol sizes
 
-    data_CVAO = data[33:69]  # data for PM1 aerosol sizes
     data_CVAO_subm_1 = data[data['Station_sizes'] == 'CVAO_0.05-1.2 µm']
     data_CVAO_subm_2 = data[data['Station_sizes'] == 'CVAO_PM1']
 
     # data_CVAO_super = data_CVAO[28:36]
     data_CVAO_tot = data[data['Station_sizes'] == 'CVAO_0.05-10 µm']
 
-    data_SVAL = data[69:207]
-    data_SVAL_14_subm = data[data['Station_sizes'] == 'Sval_0-1.5µm_14']
     data_SVAL_15_subm_1 = data[data['Station_sizes'] == 'Sval_0-1.5µm_15']
-    data_SVAL_15_subm_2 = data[data['Station_sizes'] == 'Sval_0.95-1.5µm_15']
+    data_SVAL_15_subm_2 = data[data['Station_sizes'] == 'Sval_<0.49_0.95µm_15']
 
-    data_SVAL_18_subm = data[data['Station_sizes'] == 'Sval_0-1.5µm_18']
-
-    data_SVAL_14_tot = data[data['Station_sizes'] == 'Sval_0-10µm_14']
     data_SVAL_15_tot = data[data['Station_sizes'] == 'Sval_0-10µm_15']
-
-    data_SVAL_18_tot = data[data['Station_sizes'] == 'Sval_0-10µm_18']
-
-    data_RS = data[data['Station_sizes'] == 'Ross_sea_0-1.5µm']
 
 
     dates = []
@@ -75,14 +64,10 @@ def read_obs_data_loc(main_dir, loc_dir):
 
     PI_ICE = [PI_ICE_loc, data_PI_ICE_subm_2, data_PI_ICE_super, data_PI_ICE_tot]
     PASCAL = [PASCAL_loc, data_PASCAL_subm_2, data_PASCAL_super, data_PASCAL_tot]
-    CVAO = [data_CVAO, data_CVAO_subm_2, data_CVAO_tot]
-    SVAL_14 = [data_SVAL, data_SVAL_14_subm, data_SVAL_14_tot]
-    SVAL_15 = [data_SVAL, data_SVAL_15_subm_2, data_SVAL_15_tot]
+    CVAO = [data_CVAO_subm_2, data_CVAO_tot]
+    SVAL_15 = [data_SVAL_15_subm_2, data_SVAL_15_tot]
 
-    # SVAL_18_19 = [data_SVAL, data_SVAL_18_19_subm, data_SVAL_18_19_tot]
-    SVAL_18 = [data_SVAL, data_SVAL_18_subm, data_SVAL_18_tot]
-
-    return dates, PASCAL, PI_ICE, CVAO, SVAL_14, SVAL_15, SVAL_18, data_RS
+    return dates, PASCAL, PI_ICE, CVAO, SVAL_15
 
 
 
