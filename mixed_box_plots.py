@@ -10,12 +10,47 @@ import read_data_functions
 import SS_plots
 import global_vars
 import utils_plots
+import cartopy.crs as ccrs
+import codecs
 
-def box_plot_vert(dict_df, mol_name, ID, title, lim):
-    # Create new plot
-    #print(ID, list(dict_df["Measurements"]))
-    fig, ax = plt.subplots(figsize=(12,8))#15, 8
-    # YlGnBu
+def function_plot_two_pannel(ax, location, names):
+    ax.coastlines(resolution='110m', color='gray')
+    ax.set_extent([-80, 30, -90, 90])
+
+    ind = 0
+    for loc, n in zip(location, names):
+        if len(loc) == 2:
+            pass
+        else:
+            ind = 1
+            for l in loc:
+                ax.scatter(x=l[1], y=l[0],
+                           color='k',
+                           label=n,
+                           marker='o',
+                           alpha=1,
+                           transform=ccrs.PlateCarree())
+            if n=='NAO': s1, s2 = 3,13
+            else: s1, s2 = 10, 3
+
+            plt.text(l[1] + s1, l[0] - s2, n,
+                     horizontalalignment='right',
+                     transform=ccrs.Geodetic(),
+                     bbox={'facecolor': 'lightgray',
+                           'boxstyle': 'round',
+                           'pad': 0.2,
+                           'alpha': 0.8})
+
+    gl = ax.gridlines(draw_labels=True,
+                      x_inline=False,
+                      y_inline=False)  # adding grid lines with labels
+    gl.top_labels = False
+    gl.right_labels = False
+    return ax
+
+
+def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
+
     states_palette = sns.color_palette("seismic", n_colors=4)
     my_pal = {"Model offline OMF": "skyblue",
               "ECHAM-HAM aerosol concentration": "pink",
@@ -107,9 +142,6 @@ def box_plot_vert(dict_df, mol_name, ID, title, lim):
     ax.axvline(4.5, color=".3", dashes=(2, 2))
     # ax.axvline(5.55, color=".3", dashes=(2, 2))
 
-
-    plt.savefig(f'plots/mixed_omf_conc_{title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
-    plt.show()
 
 def box_plot_vert_OM(dict_df, mol_name, ID, title, lim):
     font = 10
@@ -274,10 +306,43 @@ if __name__ == '__main__':
 
     SS_plots.plot_ss(pd.concat(all_conc[:-1]))
 
-    box_plot_vert(pd.concat([mix_omf_conc[0], mix_omf_conc[1],
+    fig, ax = plt.subplots(figsize=(12,8))#15, 8
+    box_plot_vert(ax, pd.concat([mix_omf_conc[0], mix_omf_conc[1],
                              mix_omf_conc[2]]),
                               mac_names, ['pol', 'pro', 'lip'],
                               fig_title, [1e-7, 1e1])
+    plt.savefig(f'plots/mixed_omf_conc_{fig_title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
+
+
+#################
+#### Thesis
+    fig, ax = plt.subplots(figsize=(15,8))
+    box_plot_vert(ax, pd.concat([mix_omf_conc[0], mix_omf_conc[1],
+                             mix_omf_conc[2]]),
+                              mac_names, ['pol', 'pro', 'lip'],
+                              fig_title, [1e-7, 1e1])
+    file_water = "/home/manuel/Downloads/Observ_sites_maps/SEAWATER_data.csv"
+    doc = codecs.open(file_water, 'r', 'UTF-8')  # open for reading with "universal" type set 'rU'
+    data_water = pd.read_csv(doc, sep=',')
+
+    WAP = data_water[data_water['Event'] == 'WAP']
+    NAO = data_water[data_water['Event'] == 'PASCAL']
+    CVAO = data_water[data_water['Event'] == 'CVAO']
+    var_list = [NAO, WAP, CVAO]
+    loc_list = []
+    for loc in var_list:
+        l_list = [[loc['Latitude'].values[m], loc['Longitude'].values[m]] for m in range(len(loc['Longitude'].values))]
+        loc_list.append(l_list)
+    loc_list.append([[78.9175, 11.89417]])
+    names = ['NAO', 'WAP', 'CVAO', 'SVD']  # ,, 'RS' 'Mace \n Head']
+
+    proj = ccrs.PlateCarree()
+    ax1 = fig.add_axes([0.88, 0.33, 0.4, 0.55], projection=proj)
+    function_plot_two_pannel(ax1, loc_list, names)
+
+
+
+    plt.savefig(f'plots/mixed_omf_conc_map_{fig_title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
 
     # if with_oc:
     #     box_plot_vert_OM(all_conc[-1],
