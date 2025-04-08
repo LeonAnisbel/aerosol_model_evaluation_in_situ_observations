@@ -13,7 +13,7 @@ import utils_plots
 import cartopy.crs as ccrs
 import codecs
 
-def function_plot_two_pannel(ax, location, names):
+def function_plot_two_pannel(ax, location, names, ff):
     ax.coastlines(resolution='110m', color='gray')
     ax.set_extent([-80, 30, -90, 90])
 
@@ -39,17 +39,19 @@ def function_plot_two_pannel(ax, location, names):
                      bbox={'facecolor': 'lightgray',
                            'boxstyle': 'round',
                            'pad': 0.2,
-                           'alpha': 0.8})
-
-    gl = ax.gridlines(draw_labels=True,
-                      x_inline=False,
-                      y_inline=False)  # adding grid lines with labels
-    gl.top_labels = False
-    gl.right_labels = False
+                           'alpha': 0.8},
+                     fontsize=ff)
+    #
+    # gl = ax.gridlines(draw_labels=True,
+    #                   x_inline=False,
+    #                   y_inline=False)  # adding grid lines with labels
+    # gl.top_labels = False
+    # gl.right_labels = False
     return ax
 
 
 def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
+    """Plotting model values and ovservations of OMF and aerosol mass concentration"""
 
     states_palette = sns.color_palette("seismic", n_colors=4)
     my_pal = {"Model offline OMF": "skyblue",
@@ -60,11 +62,8 @@ def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
     my_pal_keys_list = [[l_extra[0], l_extra[2]],
                         [l_extra[1], l_extra[3]]]
     # Plot with seaborn
-    # df = df.drop(df[df.score < 50].index)
     col_na = "Aerosol OMF"
-    # df = df.drop(df[df.score < 50].index)
     dict_df = dict_df.drop(dict_df[dict_df[col_na] < 0].index)
-    # print(svd["Aerosol OMF & Concentration (µg m$^{-3}$)"].values)
     flier = utils_plots.get_marker_flier()
     bx = sns.boxplot(data=dict_df,
                      x="Measurements",
@@ -84,7 +83,6 @@ def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
     utils_plots.add_species_text_name(ax, mol_name[0], 0.3, 4, 14)
     utils_plots.add_species_text_name(ax, mol_name[1], 2.9, 4, 14)
     utils_plots.add_species_text_name(ax, mol_name[2], 4.63, 4, 14)
-    # utils_plots.add_species_text_name(ax, mol_name[3], 5.8, 4, 14)
 
 
     stat_pos= [-0.1, 0.9, 1.9, 2.9, 3.9,  4.9]
@@ -124,7 +122,6 @@ def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
     ax2.set_yscale('log')
     ax2.set_ylim(lim)
     ax2.set_ylim(ax.get_ylim())
-    # ax2.set_yticklabels(ax.get_yticks())
     ax2.tick_params(axis='both', labelsize='14')
     ax2.set_ylabel('Concentration (µg m$^{-3}$)', fontsize=14)
 
@@ -140,55 +137,7 @@ def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
     # dotted lines to separate groups
     ax.axvline(2.5, color=".3", dashes=(2, 2))
     ax.axvline(4.5, color=".3", dashes=(2, 2))
-    # ax.axvline(5.55, color=".3", dashes=(2, 2))
 
-
-def box_plot_vert_OM(dict_df, mol_name, ID, title, lim):
-    font = 10
-    fig, ax = plt.subplots(figsize=(5, 4))
-
-    new_meas_vals = []
-    for i in dict_df[''].values:
-        if i == 'ECHAM-HAM aerosol concentration':
-            i_new = 'Model'
-        if i == 'Observation aerosol concentration':
-            i_new = 'Observations'
-        new_meas_vals.append(i_new)
-    dict_df.drop(columns=[''])
-    dict_df[''] = new_meas_vals
-
-    my_pal = {"Model": "pink",
-              "Observations": "palevioletred"}
-
-    col_na = "Aerosol Concentration (µg m$^{-3}$)"
-    dict_df = dict_df.drop(dict_df[dict_df[col_na] < 0].index)
-    bx = sns.boxplot(data=dict_df,
-                     x="Measurements",
-                     y=col_na,
-                     hue="",
-                     palette=my_pal,
-                     width=.5)
-
-    utils_plots.add_species_text_name(ax, mol_name, 0.02, 4, font)
-
-    # Customizing axes
-    ax.tick_params(axis='both', labelsize=font)
-    ax.yaxis.get_label().set_fontsize(font)
-    ax.set_xlabel('', fontsize=font)
-    ax.set_yscale('log')
-    ax.grid(linestyle='--', linewidth=0.4)
-    ax.set_ylim(lim)
-    ax.set_ylabel('Aerosol concentration (µg m$^{-3}$)', fontsize=font)
-
-    plt.legend(loc="lower left", fontsize=font)  # bbox_to_anchor=(1.04, 1),
-
-    ax.spines['left'].set_color('palevioletred')
-    ax.yaxis.label.set_color('palevioletred')
-    ax.tick_params(axis='y', colors='palevioletred')
-
-    plt.tight_layout()
-    plt.savefig(f'plots/mixed_conc_{title}_OC_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
-    plt.show()
 
 if __name__ == '__main__':
     # data paths
@@ -205,7 +154,7 @@ if __name__ == '__main__':
     mac_names = ['PCHO$_{aer}$|CCHO$_{aer}$', 'DCAA$_{aer}$|CAA$_{aer}$', 'PL$_{aer}$|PG$_{aer}$'
                 ,'(PCHO$_{aer}$+DCAA$_{aer}$+PL$_{aer}$)|OM$_{aer}$']  #
     station_names = [['NAO', 'CVAO', 'WAP'],  #
-                     ['SVD14', 'SVD', 'SVD18', 'CVAO  ', 'RS'],  #
+                     ['SVD', 'CVAO  '],  #
                      ['CVAO '],
                      ['NAO ', 'CVAO   ', 'WAP ']]  #
     fig_title = 'All_groups'
@@ -268,10 +217,6 @@ if __name__ == '__main__':
             conc_oc['PMOA Aerosol concentration'] = conc['Aerosol Concentration (µg m$^{-3}$)'].values
             conc_oc['OC Aerosol concentration'] = conc_oc['Aerosol Concentration (µg m$^{-3}$)'].values
 
-            # print(conc_oc[conc_oc[''] == 'Model']['Aerosol Concentration (µg m$^{-3}$)'],
-            #       conc_oc[conc_oc[''] == 'Model']['OC Concentration (µg m$^{-3}$)'], )
-            # # OC_plots.plot_oc(conc_oc, 'OC')
-
             new_conc_om = (conc_oc[conc_oc['']=='Model']['Aerosol Concentration (µg m$^{-3}$)'].values +
                            conc[conc_oc['']=='Model']['Aerosol Concentration (µg m$^{-3}$)'].values)
 
@@ -284,9 +229,10 @@ if __name__ == '__main__':
             conc_oc['Aerosol Concentration (µg m$^{-3}$)'] = (list(new_conc_om) +
                                                            conc_oc[conc_oc[''] == 'Observation'][
                                                                'Aerosol Concentration (µg m$^{-3}$)'].to_list())
-            # print(conc_oc[conc_oc[''] == 'Observation']['OC Aerosol concentration'].values)
-            # print(conc_oc[conc_oc[''] == 'Observation']['Measurements'].values)
-            OC_plots.plot_oc(conc_oc_om, 'OC+PMOA')
+
+            OC_plots.plot_oc(conc_oc_om, 'OC_PMOA_')
+            OC_plots.plot_oc(conc_oc_om, 'OC_PMOA_thesis_', no_stat=True)
+
 ############################################################################
 
         conc_rename = utils_plots.rename_func(conc, '', 'Model', 'ECHAM-HAM aerosol concentration')
@@ -303,8 +249,11 @@ if __name__ == '__main__':
         # compute_aver_std(omf, 'Aerosol OMF', i, v)
 
 
-
-    SS_plots.plot_ss(pd.concat(all_conc[:-1]))
+    fig, ax = plt.subplots(figsize=(5, 4))
+    SS_plots.plot_ss(ax, pd.concat(all_conc[:-1]))
+    fig.tight_layout()
+    plt.savefig(f'plots/SS_conc_SS submicrom_box_{global_vars.exp_name}.png',dpi = 300)
+    plt.close()
 
     fig, ax = plt.subplots(figsize=(12,8))#15, 8
     box_plot_vert(ax, pd.concat([mix_omf_conc[0], mix_omf_conc[1],
@@ -312,15 +261,13 @@ if __name__ == '__main__':
                               mac_names, ['pol', 'pro', 'lip'],
                               fig_title, [1e-7, 1e1])
     plt.savefig(f'plots/mixed_omf_conc_{fig_title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
-
+    plt.close()
 
 #################
 #### Thesis
-    fig, ax = plt.subplots(figsize=(15,8))
-    box_plot_vert(ax, pd.concat([mix_omf_conc[0], mix_omf_conc[1],
-                             mix_omf_conc[2]]),
-                              mac_names, ['pol', 'pro', 'lip'],
-                              fig_title, [1e-7, 1e1])
+    fig, ax = plt.subplots(figsize=(5,4))
+    SS_plots.plot_ss(ax, pd.concat(all_conc[:-1]), with_map=True)
+
     file_water = "/home/manuel/Downloads/Observ_sites_maps/SEAWATER_data.csv"
     doc = codecs.open(file_water, 'r', 'UTF-8')  # open for reading with "universal" type set 'rU'
     data_water = pd.read_csv(doc, sep=',')
@@ -334,20 +281,13 @@ if __name__ == '__main__':
         l_list = [[loc['Latitude'].values[m], loc['Longitude'].values[m]] for m in range(len(loc['Longitude'].values))]
         loc_list.append(l_list)
     loc_list.append([[78.9175, 11.89417]])
-    names = ['NAO', 'WAP', 'CVAO', 'SVD']  # ,, 'RS' 'Mace \n Head']
+    names = ['NAO', 'WAP', 'CVAO', 'SVD']
 
     proj = ccrs.PlateCarree()
-    ax1 = fig.add_axes([0.88, 0.33, 0.4, 0.55], projection=proj)
-    function_plot_two_pannel(ax1, loc_list, names)
+    # ax1 = fig.add_axes([0.88, 0.33, 0.4, 0.55], projection=proj)
+    ax1 = fig.add_axes([0.64, 0.55, 0.4, 0.4], projection=proj)
+    function_plot_two_pannel(ax1, loc_list, names, 5)
 
-
-
-    plt.savefig(f'plots/mixed_omf_conc_map_{fig_title}_box_{global_vars.exp_name}.png', dpi=300, bbox_inches="tight")
-
-    # if with_oc:
-    #     box_plot_vert_OM(all_conc[-1],
-    #                   mac_names[-1],
-    #                   station_names[-1],
-    #                   fig_title,
-    #                   [1e-3, 1e1])
+    plt.savefig(f'plots/SS_conc_SS submicrom_box_map_{global_vars.exp_name}.png',dpi = 300)
+    plt.close()
 

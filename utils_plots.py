@@ -5,6 +5,7 @@ from scipy.stats import linregress
 import numpy as np
 
 def rename_func(data_pd, col, na, new_na):
+    """Renames columns of the data_pd data frame from the old name "na" to "new_na" """
     pd_new = data_pd
     list_col = data_pd[col].to_list()
     for i in range(len(list_col)):
@@ -17,7 +18,7 @@ def rename_func(data_pd, col, na, new_na):
 
 
 def get_stat(obs, mod):
-    # stadistics
+    """Computes statistical indexes"""
     MSE = mean_squared_error(obs, mod)
 
     RMSE = math.sqrt(MSE)
@@ -51,6 +52,7 @@ def add_species_text_name(ax, mol_name, loc1, loc2, f):
 
 
 def customize_legend_sv_fig(pl, fig, title):
+    """ Customize box plots  """
     handles, labels = pl.get_legend_handles_labels()
     fig.legend(handles=handles,
                        labels= labels,

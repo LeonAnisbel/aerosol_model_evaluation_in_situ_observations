@@ -46,9 +46,10 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
     plt.close()
 
 
-def plot_violin(conc_mod_obs, mod_pd, obs_pd, obs_col_na, mod_col_na, title, xli, yli, loc):
+def plot_box_ss(ax, conc_mod_obs, mod_pd, obs_pd, with_map=False):
+    """Creates box plot figure of modelled Sea salt concentration .vs. observations"""
+
     font = 10
-    fig, ax = plt.subplots(figsize=(5, 4))
     my_pal = {"Model": "gray",
               "Observations": "black"}
     conc_mod_obs = conc_mod_obs.reset_index(drop=True)
@@ -58,23 +59,24 @@ def plot_violin(conc_mod_obs, mod_pd, obs_pd, obs_col_na, mod_col_na, title, xli
                       y='SS Concentration (µg m$^{-3}$)',
                       hue="",
                       #saturation=0.5, TRY TO RUN it locally to display empty boxes with the edges in the pallete colors
-                      palette=my_pal,fill=False, gap=0.1)
+                      palette=my_pal,
+                      fill=False,
+                      gap=0.1)
     pl2 = sns.stripplot(data=conc_mod_obs,
                         x="Measurements_renamed",
                         y='SS Concentration (µg m$^{-3}$)',
                         hue="",
                         dodge=True,
-                        palette=my_pal,
-                        ax = ax)
+                        palette=my_pal,)
     ax.legend_.remove()
     ax.yaxis.get_label().set_fontsize(font)
     ax.tick_params(axis='both', labelsize=font)
 
     handles, labels = pl1.get_legend_handles_labels()
-    fig.legend(handles=handles[:2],
+    plt.legend(handles=handles[:2],
                        labels= labels[:2],
                        ncol=1,
-                       bbox_to_anchor=(0.18, 0.1),
+                       # bbox_to_anchor=(0.18, 0.1),
                        loc='lower left',
                        fontsize=font)
 
@@ -87,25 +89,24 @@ def plot_violin(conc_mod_obs, mod_pd, obs_pd, obs_col_na, mod_col_na, title, xli
     list_stat = ['NAO','CVAO', 'WAP', 'SVD']
     stat_pos = [-0.3, 0.85, 1.85, 2.85]
 
-    for i, stat in enumerate(list_stat):
-        mod = mod_pd[mod_pd['Measurements_renamed']==stat]
-        obs = obs_pd[obs_pd['Measurements_renamed']==stat]
+    if not with_map:
+        for i, stat in enumerate(list_stat):
+            mod = mod_pd[mod_pd['Measurements_renamed']==stat]
+            obs = obs_pd[obs_pd['Measurements_renamed']==stat]
 
-        RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs['Aerosol Concentration (µg m$^{-3}$)'].values,
-                                                 mod['Aerosol Concentration (µg m$^{-3}$)'].values)
+            RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs['Aerosol Concentration (µg m$^{-3}$)'].values,
+                                                     mod['Aerosol Concentration (µg m$^{-3}$)'].values)
 
-        print( 'SS statistics \n',   stat, 'RMSE',  RMSE,'MB',  mean_bias, 'NMB',  NMB)
-        if i == 0:
-            formatted_values = (f'\n NMB= {np.round(NMB, 2)} '
-                                 f'\n    n = {np.round(len(obs), 2)} ')
-        else:
-            formatted_values = (f'\n {np.round(NMB, 2)} ' 
-                                 f'\n    {np.round(len(obs), 2)} ')
-        ax.text(stat_pos[i], 4, formatted_values, fontsize=6)
+            print( 'SS statistics \n',   stat, 'RMSE',  RMSE,'MB',  mean_bias, 'NMB',  NMB)
+            if i == 0:
+                formatted_values = (f'\n NMB= {np.round(NMB, 2)} '
+                                     f'\n    n = {np.round(len(obs), 2)} ')
+            else:
+                formatted_values = (f'\n {np.round(NMB, 2)} ' 
+                                     f'\n    {np.round(len(obs), 2)} ')
 
-    fig.tight_layout()
-    plt.savefig(f'plots/SS_conc_{title}_box_{global_vars.exp_name}.png',dpi = 300)
-    plt.close()
+            ax.text(stat_pos[i], 4, formatted_values, fontsize=6)
+
 
 def transform_pd(conc, old_cols, obs_col, mod_col):
     conc_model = conc.loc[(conc[''] == 'Model')][:-1]
@@ -122,15 +123,14 @@ def transform_pd(conc, old_cols, obs_col, mod_col):
     return conc_mod_obs
 
 
-def plot_ss(conc_ss):
+def plot_ss(ax, conc_ss, with_map=False):
+    """Prepares the data to plot each station with an additional identifier to indicate to
+    which dataset are the SS samples associated. It also computes the statistics and calls
+    the function that creates the SS concentration scatter plot"""
     mac_names = 'SS submicrom'
-    old_cols = 'SS Concentration (µg m$^{-3}$)'
-    obs_col_na = 'Observations SS concentration (µg m$^{-3}$)'
-    mod_col_na = 'Model SS concentration (µg m$^{-3}$)'
 
     new_meas_vals = []
     for i in conc_ss['Measurements'].values:
-        # len(i) > 3 and i[:3] == 'CVAO        else:
         i_new = i
         if i[:4] == 'CVAO':
             i_new = 'CVAO'
@@ -151,76 +151,79 @@ def plot_ss(conc_ss):
     obs_pd = conc_ss[conc_ss[''] == 'Observations']
 
 
-    plot_violin(conc_ss,
+    plot_box_ss(ax,
+                conc_ss,
                 mod_pd, obs_pd,
-             obs_col_na, mod_col_na,
-             mac_names,
-             [1e-3, 1e1],
-             [1e-3, 1e1],
-             0.7)
-
-
-    conc_ss = conc_ss[(conc_ss['Measurements'] == 'CVAO ') |
-                      (conc_ss['Measurements'] == 'CVAO  ') |
-                      (conc_ss['Measurements'] == 'CVAO') |
-                      (conc_ss['Measurements'] == 'WAP') |
-                      (conc_ss['Measurements'] == 'NAO') |
-                      #(conc_ss['Measurements'] == 'SVD14') |
-                      (conc_ss['Measurements'] == 'SVD')]
-                      #(conc_ss['Measurements'] == 'SVD18')
-
-
-    #print(conc_ss[conc_ss['Measurements']=='CVAO  '])
-
-
-    new_meas_vals = []
-    for i in obs_pd['Measurements'].values:
-        # len(i) > 3 and i[:3] == 'CVAO        else:
-        i_new = i
-        if i == 'CVAO ':
-            i_new = 'CVAO_PG$_{aer}$'
-        if i == 'CVAO':
-            i_new = 'CVAO_CCHO$_{aer}$'
-        if i == 'CVAO  ':
-            i_new = 'CVAO_AA$_{aer}$'
-        if i == 'SVD':
-            i_new = 'SVD'
-        new_meas_vals.append(i_new)
-
-    print(len(new_meas_vals), len(obs_pd[old_cols].values), len(mod_pd[old_cols].values))
-    conc_ss_pd = pd.DataFrame(data={'Measurements': new_meas_vals,
-                                    'Observations SS concentration (µg m$^{-3}$)': obs_pd[old_cols].values,
-                                    'Model SS concentration (µg m$^{-3}$)': mod_pd[old_cols].values})
-
-    new_conc_ss = conc_ss_pd.dropna(subset=[obs_col_na])
-    new_conc_ss = new_conc_ss.dropna(subset=[mod_col_na])
-
-    #print(new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].min(),
-     #     new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].max())
-    # new_meas_vals.append('NO_STAT')
-    # print(new_conc_ss)
-    for m in range(len(new_meas_vals)):
-        mod_ss = new_conc_ss[new_conc_ss['Measurements'] == new_meas_vals[m]][mod_col_na]
-        print('SS', new_meas_vals[m])
-
-        # print(mod_ss)
-
-        obs_ss = new_conc_ss[new_conc_ss['Measurements'] == new_meas_vals[m]][obs_col_na]
-        RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs_ss, mod_ss)
-
-        # # if new_meas_vals[m] != new_meas_vals[m + 1]:
-        #print('SS', new_meas_vals[m])
-        print('MOdel ', mod_ss.median(), mod_ss.std())
-        print('Observations ', obs_ss.median(), obs_ss.std())
-        #
-        print('Statistics: ', 'RMSE:', RMSE, 'bias: ', mean_bias, 'NMB: ', NMB, 'R:', R, '\n')
-    # conc_mod_obs_ss_acc = transform_pd(new_conc_ss, old_cols, obs_col_na, mod_col_na)
-    plot_fit(new_conc_ss,
-             obs_col_na, mod_col_na,
-             mac_names,
-             [1e-3, 1e1],
-             [1e-3, 1e1],
-             0.7)
+                with_map=with_map)
+    #
+    # #
+    # old_cols = 'SS Concentration (µg m$^{-3}$)'
+    # obs_col_na = 'Observations SS concentration (µg m$^{-3}$)'
+    # mod_col_na = 'Model SS concentration (µg m$^{-3}$)'
+    # conc_ss = conc_ss[(conc_ss['Measurements'] == 'CVAO ') |
+    #                   (conc_ss['Measurements'] == 'CVAO  ') |
+    #                   (conc_ss['Measurements'] == 'CVAO') |
+    #                   (conc_ss['Measurements'] == 'WAP') |
+    #                   (conc_ss['Measurements'] == 'NAO') |
+    #                   #(conc_ss['Measurements'] == 'SVD14') |
+    #                   (conc_ss['Measurements'] == 'SVD')]
+    #                   #(conc_ss['Measurements'] == 'SVD18')
+    #
+    #
+    # #print(conc_ss[conc_ss['Measurements']=='CVAO  '])
+    #
+    #
+    # new_meas_vals = []
+    # for i in obs_pd['Measurements'].values:
+    #     # len(i) > 3 and i[:3] == 'CVAO        else:
+    #     i_new = i
+    #     if i == 'CVAO ':
+    #         i_new = 'CVAO_PG$_{aer}$'
+    #     if i == 'CVAO':
+    #         i_new = 'CVAO_CCHO$_{aer}$'
+    #     if i == 'CVAO  ':
+    #         i_new = 'CVAO_AA$_{aer}$'
+    #     if i == 'SVD':
+    #         i_new = 'SVD'
+    #     new_meas_vals.append(i_new)
+    #
+    # print(len(new_meas_vals), len(obs_pd[old_cols].values), len(mod_pd[old_cols].values))
+    # conc_ss_pd = pd.DataFrame(data={'Measurements': new_meas_vals,
+    #                                 'Observations SS concentration (µg m$^{-3}$)': obs_pd[old_cols].values,
+    #                                 'Model SS concentration (µg m$^{-3}$)': mod_pd[old_cols].values})
+    #
+    # new_conc_ss = conc_ss_pd.dropna(subset=[obs_col_na])
+    # new_conc_ss = new_conc_ss.dropna(subset=[mod_col_na])
+    #
+    # #print(new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].min(),
+    #  #     new_conc_ss[new_conc_ss['Measurements'] == 'SVD14'][mod_col_na].max())
+    # # new_meas_vals.append('NO_STAT')
+    # # print(new_conc_ss)
+    # for m in range(len(new_meas_vals)):
+    #     mod_ss = new_conc_ss[new_conc_ss['Measurements'] == new_meas_vals[m]][mod_col_na]
+    #     print('SS', new_meas_vals[m])
+    #
+    #
+    #     # print(mod_ss)
+    #
+    #     obs_ss = new_conc_ss[new_conc_ss['Measurements'] == new_meas_vals[m]][obs_col_na]
+    #     if new_meas_vals[m]=='SVD':
+    #         print('\n \n \n ', 'SS concent at SVD', obs_ss, '\n \n \n ')
+    #
+    #
+    #     RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs_ss, mod_ss)
+    #
+    #     # print('MOdel ', mod_ss.median(), mod_ss.std())
+    #     # print('Observations ', obs_ss.median(), obs_ss.std())
+    #     # #
+    #     # print('Statistics: ', 'RMSE:', RMSE, 'bias: ', mean_bias, 'NMB: ', NMB, 'R:', R, '\n')
+    # # conc_mod_obs_ss_acc = transform_pd(new_conc_ss, old_cols, obs_col_na, mod_col_na)
+    # plot_fit(new_conc_ss,
+    #          obs_col_na, mod_col_na,
+    #          mac_names,
+    #          [1e-3, 1e1],
+    #          [1e-3, 1e1],
+    #          0.7)
 
 
 
