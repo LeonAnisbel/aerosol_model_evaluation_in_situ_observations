@@ -267,16 +267,7 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
 
 
         id_camp.append(ID)
-       # create new dataframe to store the model data after interpolation together with obs.
-    print(len(id_camp),
-          len(start_4_mod),
-          len(end_4_mod),
-          len(conc_obs_ss),
-          len(conc_model_ss),
-          len(conc_obs_oc),
-          len(conc_model_oc),
-          len(conc_obs_ss_tot),
-          len(conc_model_ss_tot))
+
     pd_da = pd.DataFrame({'ID': id_camp, 'Start Date/Time': start_4_mod, 'End Date/Time': end_4_mod,
                           'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss,
                           'conc_obs_oc': conc_obs_oc, 'conc_mod_oc': conc_model_oc,

@@ -6,6 +6,8 @@ from scipy.interpolate import griddata
 
 
 def read_model(path, exp, day, mo, yr, ext, monthly=False):
+    """ Reads the model data for the specific month and year of the observational data
+    :return: datasets of aerosol concentration and air density """
     data_dir = f"{path}"
     if mo < 10:
         mo_str = f'0{mo}'
@@ -38,6 +40,7 @@ def read_model(path, exp, day, mo, yr, ext, monthly=False):
 
 
 def def_box(ds, lat_obs, lon_obs):
+    """ :return: a dataset after selecting the box considered for the interpolation """
     bx_size = 5
     ds_bx = ds.where((ds.lat < lat_obs[1] + bx_size) & (ds.lat > lat_obs[0] - bx_size) &
                      (ds.lon < lon_obs[1] + bx_size) & (ds.lon > lon_obs[0] - bx_size), drop=True)
@@ -45,6 +48,8 @@ def def_box(ds, lat_obs, lon_obs):
 
 
 def get_mod_box(dr_aer, lat_obs, lon_obs):
+    """ :return: latitude and longitude values defined as a box around the station location leaving out nans """
+
     dr_aer_bx = def_box(dr_aer, lat_obs, lon_obs)
 
     # variables for the interpolation
@@ -69,6 +74,7 @@ def get_mod_box(dr_aer, lat_obs, lon_obs):
 
 
 def start_interp(mod_data, mod_ro_da, var_names, lon_btw, lat_btw, mi_ma_lon, mi_ma_lat, all_modes=False):
+    """ This function will initiate through all variable (aerosol tracers) to perform the interpolation"""
     interp_var_list = {}
     for va_na in var_names:
         interp_var_list[va_na] = interp_func(mod_data, mod_ro_da, va_na,
@@ -82,6 +88,7 @@ def start_interp(mod_data, mod_ro_da, var_names, lon_btw, lat_btw, mi_ma_lon, mi
 
 
 def interp_func(mod_ds, mod_dr_ro, var, obs_lon, obs_lat, obs_lon_mi_ma, obs_lat_mi_ma, all_modes=False):
+    """ This function will create and adapt the required grids for the interpolation"""
     if all_modes:
         dr_var = (mod_ds[f'{var}_AS'] + mod_ds[f'{var}_CS'])
     else:

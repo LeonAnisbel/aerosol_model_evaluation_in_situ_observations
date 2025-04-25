@@ -5,107 +5,209 @@ import matplotlib.pyplot as plt
 
 import read_data_functions
 
+ff = 12
 
-def plot_MC_monthly_seasonality(yr):
+def concat_omf_mod_obs(data_omf, obs_MH_15, col_name, yr):
+    if yr == '0209':
+        obs_MH_15[col_name] = data_omf['OMF_mod_tot'].values
+    else:
+        times = pd.to_datetime(data_omf['Start Date/Time'], dayfirst=True)
+        data_omf_monthly = data_omf.groupby([times.dt.year, times.dt.month])[['OMF_mod_tot']].mean()
+        obs_MH_15[col_name] = data_omf_monthly['OMF_mod_tot'].values
+
+    return obs_MH_15
+
+def fill_btw(axs, data, std, c, plot_std=True):
+    if plot_std:
+        min, max = ([i - j for i, j in zip(data.values, std)],
+                    [i + j for i, j in zip(data.values, std)])
+        axs.fill_between(np.arange(1, 13),
+                         min, max,
+                         facecolor=c,
+                         alpha=0.1)
+
+def format_func(value, tick_number):
+    N = int(value )
+    return N
+
+
+def expand_btwn_start_end_date(data_0209, vars):
+    date_end = 'End Date/Time'
+    date = 'Start Date/Time'
+
+    data_0209.loc[:, (date_end)] = data_0209[date_end].apply(pd.to_datetime)
+    data_0209['dates'] = data_0209.apply(
+        lambda row: pd.date_range(row[date], row[date_end], freq='D'),
+        axis=1)
+    daily = data_0209.explode('dates').rename(columns={'dates': 'date'})
+    data_0209_hr = (daily
+                    .groupby(daily['date'].dt.to_period('M'))[vars]
+                    .mean())
+    start = []
+    for p in data_0209_hr.index:
+        start.append(p.to_timestamp(how='start'))  # Timestamp('2002-03-01 00:00:00')
+        end = p.to_timestamp(how='end')  # Timestamp('2002-03-31 00:00:00')
+    data_0209_hr['start'] = start
+    data_0209_hr['start'] = data_0209_hr['start'].apply(pd.to_datetime)
+    times = data_0209_hr['start']
+
+    data_0209_std = (data_0209_hr.groupby([times.dt.month])[vars]
+                     .std())
+    data_0209_hr = (data_0209_hr.groupby([times.dt.month])[vars]
+                    .mean())
+    return data_0209_hr, data_0209_std
+
+
+def plot_MC_monthly_seasonality(yr, var_names):
     data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
-    fig, ax = plt.subplots(3,1, figsize=(6,15))
-    ax.flatten()
+    if yr == '0209': stat_exp = 'MH_Rinaldi'
+    else: stat_exp = 'MH'
 
-    _, _, months, _, _ = read_data_functions.read_data(yr)
-    obs_MH_15, _, _, _, obs_MH_15_std = read_data_functions.read_data(yr, monthly=True)
+    _, _, months, _, _ = read_data_functions.read_data(yr, var_names)
+    obs_MH_15, _, _, _, obs_MH_15_std = read_data_functions.read_data(yr,var_names, monthly=True)
 
-    data['months'] = months
     data_month_mean = []
     data_month_std = []
-    for i in np.arange(1,13):
-        data_mean = data.loc[(data['months']==i), ('conc_mod_ss', 'conc_mod_tot')].mean()
-        data_std = data.loc[(data['months']==i), ('conc_mod_ss', 'conc_mod_tot')].std()
 
-        data_month_mean.append(data_mean.values)
-        data_month_std.append(data_std.values)
+    # Read OMF and add it to plot
+    data_omf_recom = pd.read_pickle(f'pd_files/tot_omf_{stat_exp}.pkl')
+    data_omf_recom_cesm = pd.read_pickle(f'pd_files/fesom_burrows_tot_omf_{stat_exp}.pkl')
+    data_omf_cesm = pd.read_pickle(f'pd_files/burrows_tot_omf_{stat_exp}.pkl')
 
-    ss_vals, moa_vals = [i[0] for i in data_month_mean],  [i[1] for i in data_month_mean]
-    ss_std, moa_std = [i[0] for i in data_month_std],  [i[1] for i in data_month_std]
+    if yr == '0209':
+        pd_data = []
+        pd_data_std = []
+        for data_0209 in [data_omf_recom, data_omf_recom_cesm, data_omf_cesm]:
+            data_0209_omf_hr, data_0209_omf_std = expand_btwn_start_end_date(data_0209, ['OMF_mod_tot'])
+
+            pd_data.append(data_0209_omf_hr)
+            pd_data_std.append(data_0209_omf_std)
+
+        data_omf_recom = pd_data[0]
+        data_omf_recom_cesm = pd_data[1]
+        data_omf_cesm = pd_data[2]
+
+        data_0209_conc_hr, data_0209_conc_std = expand_btwn_start_end_date(data,
+                                                                           ['conc_mod_ss', 'conc_mod_tot'])
+        ss_vals = data_0209_conc_hr['conc_mod_ss']
+        ss_std = data_0209_conc_std['conc_mod_ss']
+        moa_vals = data_0209_conc_hr['conc_mod_tot']
+        moa_std = data_0209_conc_std['conc_mod_tot']
+    else:
+        for i in np.arange(1, 13):
+            data_std = data.loc[(data['months'] == i), ('conc_mod_ss', 'conc_mod_tot')].std()
+            data_mean = data.loc[(data['months'] == i), ('conc_mod_ss', 'conc_mod_tot')].mean()
+
+            data_month_mean.append(data_mean.values)
+            data_month_std.append(data_std.values)
+
+        ss_vals, moa_vals = [i[0] for i in data_month_mean], [i[1] for i in data_month_mean]
+        ss_std = [i[0] if not np.isnan(i[0]) else 0
+                  for i in data_month_std]
+        moa_std = [i[1] if not np.isnan(i[1]) else 0
+                   for i in data_month_std]
 
     obs_MH_15['Model (SS)'] = ss_vals
     obs_MH_15['Model (PMOA)'] = moa_vals
 
-    obs_MH_15.rename(columns={'seasalt':'Observations (SS)',
-                              'PMOA':'Observations (PMOA)',
-                              'OMF': 'Observations (OMF)'}, inplace=True)
+
+    obs_MH_15 = concat_omf_mod_obs(data_omf_recom, obs_MH_15, 'REcoM', yr)
+    obs_MH_15 = concat_omf_mod_obs(data_omf_recom_cesm, obs_MH_15, 'REcoM+CESM',yr)
+    obs_MH_15 = concat_omf_mod_obs(data_omf_cesm, obs_MH_15, 'CESM',yr)
+
+    obs_MH_15.rename(columns={var_names[1]:'Observations (SS)',
+                              var_names[2]:'Observations (PMOA)',
+                              'OMF': 'Observations'}, inplace=True)
+
     data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
     data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
-
-    # Read OMF and add it to plot
-    data_omf = pd.read_pickle(f'pd_files/tot_omf_MH.pkl')
-    times = pd.to_datetime(data_omf['Start Date/Time'], dayfirst=True)
-    data_omf_monthly = data_omf.groupby([times.dt.year, times.dt.month])[['OMF_mod_tot']].mean()
-    obs_MH_15['Model (OMF)'] = data_omf_monthly['OMF_mod_tot'].values
-    data_omf = obs_MH_15[['Model (OMF)', 'Observations (OMF)']].copy(deep=True)
-
-    def fill_between(axs, data, std, c, plot_std=True):
-        if plot_std:
-            min, max = ([i-j for i,j in zip(data.values, std)],
-                        [i+j for i,j in zip(data.values, std)])
-            axs.fill_between(np.arange(0,12),
-                                min, max,
-                               facecolor=c,
-                                 alpha=0.1)
-
-    data_ss.plot(ax = ax[0], color = ['b', 'r'])
-    fill_between(ax[0],data_ss['Observations (SS)'], obs_MH_15_std['seasalt'].values, 'r')
-    fill_between(ax[0], data_ss['Model (SS)'], ss_std, 'b')
-    ax[0].set_title('Sea salt')
-    ax[0].set_xlabel(' ')
-    ax[0].set_ylabel('Concentration (ug m$^{-3}$)')
+    data_omf = obs_MH_15[['REcoM', 'REcoM+CESM', 'CESM', 'Observations']].copy(deep=True)
 
 
-    data_moa.plot(ax = ax[1], color = ['b', 'r'])
-    fill_between(ax[1], data_moa['Observations (PMOA)'], obs_MH_15_std['PMOA'].values, 'r')
-    fill_between(ax[1], data_moa['Model (PMOA)'], moa_std, 'b')
-    ax[1].set_xlabel(' ')
-    ax[1].set_title('PMOA')
-    ax[1].set_ylabel('Concentration (ug m$^{-3}$)')
+    fig, ax = plt.subplots(1,1, figsize=(5,5))
+    cc = ['darkorange', 'limegreen', 'dodgerblue', 'black']
+    data_omf.plot(ax = ax, color =cc)
+    # print(obs_MH_15_std)
 
-    data_omf.plot(ax = ax[2], color = ['b', 'r'])
-    fill_between(ax[2], data_omf['Observations (OMF)'], obs_MH_15_std['OMF'].values, 'r')
-    fill_between(ax[2], data_omf['Model (OMF)'], [], 'b', plot_std=False)
-    ax[2].set_xlabel(' ')
-    ax[2].set_title('OMF')
-    ax[2].set_ylabel('OMF')
+    #print(data_omf['Observations'], obs_MH_15_std['OMF'].values)
 
-#    ax[0].semilogy()
+    fill_btw(ax, data_omf['Observations'], obs_MH_15_std['OMF'].values, 'gray')
+    ax.set_ylabel('OMF',
+                     fontsize=ff)
+    ax.set_xlabel(' ')
+    ax.set_xlabel('Months',
+                 fontsize=ff)
+    ax.set_xticklabels([])
+    xticks = np.arange(0,12)
+    ax.set_xticks(xticks)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
+    ax.xaxis.set_tick_params(labelsize=ff)
+    ax.tick_params(axis='both', labelsize=str(ff))
+    fig.tight_layout()
+    plt.savefig(f'plots/{stat_exp}{yr}_monthly_OMF_{global_vars.exp_name}.png', dpi=300)
+
+
+
+    fig, ax = plt.subplots(1,2, figsize=(10,5))
+    ax.flatten()
+    cc = ['darkred', 'black']
+    data_ss.plot(ax = ax[0], color = cc)
+    fill_btw(ax[0],data_ss['Observations (SS)'], obs_MH_15_std[var_names[1]].values, 'gray')
+    fill_btw(ax[0], data_ss['Model (SS)'], ss_std, 'r')
+    ax[0].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+                     fontsize=ff)
+
+    data_moa.plot(ax = ax[1], color = cc)
+    fill_btw(ax[1], data_moa['Observations (PMOA)'], obs_MH_15_std[var_names[2]].values,'gray' )
+    fill_btw(ax[1], data_moa['Model (PMOA)'], moa_std, 'r')
+    ax[1].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+                     fontsize=ff)
+
+    indices = [r'$\bf{(a)}$', r'$\bf{(b)}$']
+    for a, i in zip(ax, indices):
+        a.set_xlabel(' ')
+        a.set_title(i, loc='left')
+        a.set_xlabel('Months',
+                     fontsize=ff)
+        a.set_xticklabels([])
+        xticks = np.arange(0,12)
+        a.set_xticks(xticks)
+
+        a.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
+        a.xaxis.set_tick_params(labelsize=ff)
+
+        a.tick_params(axis='both', labelsize=str(ff))
 
     fig.tight_layout()
     plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png')
 
 
-def plot_MC_daily_seasonality(yr):
+def plot_MC_daily_seasonality(yr, var_names):
     data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
     fig, ax = plt.subplots(2,1, figsize=(10,5))
     ax.flatten()
-    obs_MH_15, _, _, _, _ = read_data_functions.read_data(yr)
+    obs_MH_15, _, _, _, _ = read_data_functions.read_data(yr, var_names)
     obs_MH_15['Model (SS)'] = data['conc_mod_ss'].values
     obs_MH_15['Model (PMOA)'] = data['conc_mod_tot'].values
-    obs_MH_15.rename(columns={'seasalt':'Observations (SS)',
-                              'PMOA':'Observations (PMOA)'}, inplace=True)
+    obs_MH_15.rename(columns={var_names[1]:'Observations (SS)',
+                              var_names[2]:'Observations (PMOA)'}, inplace=True)
 
     data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
     data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
 
-    data_ss.plot(ax = ax[0], color = ['b', 'r'])
+    cc = ['#4B0082', 'darkred']
+    data_ss.plot(ax = ax[0], color = cc)
     ax[0].set_title('Sea salt')
     ax[0].set_xlabel(' ')
     ax[0].set_ylabel('Concentration (ug m$^{-3}$)')
 
-    data_moa.plot(ax = ax[1], color = ['b', 'r'])
+    data_moa.plot(ax = ax[1], color = cc)
     ax[1].set_xlabel(' ')
     ax[1].set_title('PMOA')
     ax[1].set_ylabel('Concentration (ug m$^{-3}$)')
 
     fig.tight_layout()
     plt.savefig(f'plots/MH{yr}_conc_daily_{global_vars.exp_name}.png')
-
 
 
 def plot_all_arctic_stations():
@@ -118,11 +220,13 @@ def plot_all_arctic_stations():
     #data['conc_obs_tot'] = data_mo_all_stations['PBOA_ug_m3'].values
 
     data_sel_yr = ((data.groupby(['months', 'ID'])[[ 'conc_obs_tot',  'conc_mod_tot']])
-                   .median())
+                   .mean())
     data_std = ((data.groupby(['months', 'ID'])[[ 'conc_obs_tot',  'conc_mod_tot']])
                    .std())
-    data_std['obs_std_fill_min'] = [val-std for val,std in zip(data_sel_yr['conc_obs_tot'].values, data_std['conc_obs_tot'].values)]
-    data_std['obs_std_fill_max'] = [val+std for val,std in zip(data_sel_yr['conc_obs_tot'].values, data_std['conc_obs_tot'].values)]
+    data_std['obs_std_fill_min'] = [val-std for val,std in zip(data_sel_yr['conc_obs_tot'].values,
+                                                               data_std['conc_obs_tot'].values)]
+    data_std['obs_std_fill_max'] = [val+std for val,std in zip(data_sel_yr['conc_obs_tot'].values,
+                                                               data_std['conc_obs_tot'].values)]
     data_sel_yr = data_sel_yr.reset_index()
     data_std=data_std.reset_index()
     data_sel_yr.set_index('months', inplace=True)
@@ -178,12 +282,26 @@ def plot_all_arctic_stations():
 
 
 if __name__ == '__main__':
-    plot_all_arctic_stations()
-    print('start seasonality at MH')
-    plot_MC_monthly_seasonality('2018')
-    plot_MC_daily_seasonality('2018')
+    year = '0209'
+    print('start seasonality at MH', year)
+    plot_MC_monthly_seasonality(year,
+                                global_vars.yr_exp_var_names[year])
 
-    plot_MC_daily_seasonality('2015')
+    year = '2018'
+    print('start seasonality at MH', year)
+    plot_MC_monthly_seasonality(year,
+                                global_vars.yr_exp_var_names[year])
+    plot_MC_daily_seasonality(year,
+                                global_vars.yr_exp_var_names[year])
+
+    year = '2015'
+    print('start seasonality at MH', year)
+    plot_MC_daily_seasonality(year,
+                                global_vars.yr_exp_var_names[year])
+
+    print('start seasonality all Arctic stations', year)
+    plot_all_arctic_stations()
+
 
 
 

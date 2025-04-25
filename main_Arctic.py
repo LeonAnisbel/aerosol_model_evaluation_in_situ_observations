@@ -23,15 +23,38 @@ if sys.argv[1] == 'all':
 
 
 if sys.argv[1] == 'MH':
-    year = '2018'
-    data_MH_15, days,months,years, _ = read_data_functions.read_data(year, monthly=True)
     lat, lon = 53.3333, -9.9 % 360
-    pd_MH15 = mod_interp_obs_concat.interp_conc_arctic_stations('ac3_arctic',
-                                                      data_MH_15,
-                                                      'MH15',
+    year = '0209'
+    data_MH, days,months,years, _ = read_data_functions.read_data(year,
+                                                                  global_vars.yr_exp_var_names[year],
+                                                                  monthly=False)
+    pd_MH0209 = mod_interp_obs_concat.interp_conc_arctic_stations('ac3_arctic',
+                                                      data_MH,
+                                                      'MH'+year,
                                                       lat,
                                                       lon,
                                                       days,
                                                       months,
-                                                      years)
+                                                      years,
+                                                      global_vars.yr_exp_var_names[year][1:])
+    pd_MH0209.to_pickle(f'pd_files/MH{year}_conc_{global_vars.exp_name}.pkl')
+
+    exit()
+
+
+    year = '2018'
+    data_MH, days,months,years, _ = read_data_functions.read_data(year,
+                                                                  global_vars.yr_exp_var_names[year],
+                                                                  monthly=False)
+    pd_MH15 = mod_interp_obs_concat.interp_conc_arctic_stations('ac3_arctic',
+                                                      data_MH,
+                                                      'MH18',
+                                                      lat,
+                                                      lon,
+                                                      days,
+                                                      months,
+                                                      years,
+                                                      global_vars.yr_exp_var_names[year][1:])
     pd_MH15.to_pickle(f'pd_files/MH{year}_conc_{global_vars.exp_name}.pkl')
+
+

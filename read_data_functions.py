@@ -18,11 +18,8 @@ def read_obs_data_loc(main_dir, loc_dir):
     PI_ICE_loc = pd.read_csv(doc, sep=',')
 
     # converting 'Date/Time' column to datetime data type
-    print(PASCAL_loc['Date/Time'].values)
     PASCAL_loc['Date/Time'] = [pd.Timestamp(row).to_pydatetime() for row in PASCAL_loc['Date/Time'].values]
     PI_ICE_loc['Date/Time'] = [pd.Timestamp(row).to_pydatetime() for row in PI_ICE_loc['Date/Time'].values]
-
-    print(PI_ICE_loc['Date/Time'])
 
     doc = codecs.open(main_dir + pol_data, 'r', 'UTF-8')  # open for reading with "universal" type set
     data = pd.read_csv(doc, sep=',')
@@ -30,7 +27,6 @@ def read_obs_data_loc(main_dir, loc_dir):
     # converting 'Date/Time' column to datetime data type
     data['Start Date/Time'] = data['Start Date/Time'].apply(pd.to_datetime)
     data['End Date/Time'] = data['End Date/Time'].apply(pd.to_datetime)
-    print(data['Event'])
     # Save data for PI_ICE
     data_PI_ICE_subm_1 = data[data['Station_sizes'] == 'PI-ICE_0.05_1.2']  # data for submicron aerosol size
     data_PI_ICE_subm_2 = data[data['Station_sizes'] == 'PI-ICE_0.14_1.2']  # data for submicron aerosol size
@@ -71,41 +67,91 @@ def read_obs_data_loc(main_dir, loc_dir):
 
 
 
-def read_data(yr, monthly=False):
+def read_data(yr, var_names, monthly=False):
     da_dir = global_vars.main_data_dir+'MH_PMOAseasalt_'+yr+'.csv'
     #da_dir = '/home/manuel/Downloads/'+'MH_PMOAseasalt_'+yr+'.csv'
+
+    date = var_names[0]
+    ss = var_names[1]
+    pmoa = var_names[2]
 
     data_all = codecs.open(da_dir,
                            'r')
     data = pd.read_csv(data_all, sep=',')
-    data_15 = data[['date', 'seasalt', 'PMOA']].copy(deep=True)
+    if yr == '0209':
+        dayfirst = False
+        date_end = var_names[3]
+    else: dayfirst=True
+    data_15 = data[var_names].copy(deep=True)
 
-    data_15['OMF'] = (data_15['PMOA'].values /
-                      (data_15['PMOA'].values +
-                       data_15['seasalt'].values))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)
+    data_15['OMF'] = (data_15[pmoa].values /
+                      (data_15[pmoa].values +
+                       data_15[ss].values))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)
 
-    data_15.loc[:, ('date')] = data_15['date'].apply(pd.to_datetime, dayfirst=True)
+    data_15.loc[:, (date)] = data_15[date].apply(pd.to_datetime, dayfirst=dayfirst)
+    times = pd.to_datetime(data_15[date], dayfirst=dayfirst)
 
-    times = pd.to_datetime(data_15['date'], dayfirst=True)
 
-    if monthly:
-        days = []
-        data_15_hr = (data_15.groupby([times.dt.year, times.dt.month])[['seasalt', 'PMOA', 'OMF']]
+    if yr == '0209':
+        if monthly:
+            # print(data_15)
+            data_15.loc[:, (date_end)] = data_15[date_end].apply(pd.to_datetime, dayfirst=dayfirst)
+            data_15['dates'] = data_15.apply(
+                                lambda row: pd.date_range(row[date], row[date_end], freq='D'),
+                                axis=1)
+
+            daily = data_15.explode('dates').rename(columns={'dates': 'date'})
+            data_15_hr = (daily
+                       .groupby(daily['date'].dt.to_period('M'))[[ss, pmoa, 'OMF']]
+                       .mean())
+            start = []
+            print(data_15_hr)
+
+            for p in data_15_hr.index:
+                start.append(p.to_timestamp(how='start'))  # Timestamp('2002-03-01 00:00:00')
+            data_15_hr['start'] = start
+            data_15_hr['start'] = data_15_hr['start'].apply(pd.to_datetime)
+            times = data_15_hr['start']
+            data_15_std = (data_15_hr.groupby([times.dt.month])[[ss, pmoa, 'OMF']]
+                          .std())
+            data_15_hr = (data_15_hr.groupby([times.dt.month])[[ss, pmoa, 'OMF']]
+                          .mean())
+
+        else:
+            data_15_hr = data_15
+            data_15_std = None
+            data_15_hr[date] = data_15_hr[date].apply(pd.to_datetime)
+            data_15_hr[date_end] = data_15_hr[date_end].apply(pd.to_datetime)
+
+    if yr != '0209':
+        if monthly:
+            days = []
+            data_15_hr = (data_15.groupby([times.dt.year, times.dt.month])[[ss, pmoa, 'OMF']]
+                          .mean())
+            data_15_std = (data_15.groupby([times.dt.year, times.dt.month])[[ss, pmoa, 'OMF']]
+                          .std())
+        else:
+            data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[[ss, pmoa, 'OMF']]
                       .mean())
-        data_15_std = (data_15.groupby([times.dt.year, times.dt.month])[['seasalt', 'PMOA', 'OMF']]
-                      .std())
+            data_15_std = (data_15.groupby([times.dt.year, times.dt.month])[[ss, pmoa, 'OMF']]
+                          .std())
+            days = [i[2] for i in data_15_hr.index]
+
+
+    if yr == '0209':
+        if monthly:
+            months = data_15_hr.index.to_list
+            years = None
+            days = None
+        else:
+            months = data_15_hr[date].dt.month.values
+            days = data_15_hr[date].dt.day.values
+            years = data_15_hr[date].dt.year.values
     else:
-        data_15_hr = (data_15.groupby([times.dt.year, times.dt.month, times.dt.day])[['seasalt', 'PMOA', 'OMF']]
-                  .median())
-        data_15_std = (data_15.groupby([times.dt.year, times.dt.month])[['seasalt', 'PMOA', 'OMF']]
-                      .std())
-        days = [i[2] for i in data_15_hr.index]
+        months = [i[1] for i in data_15_hr.index.to_numpy()]
+        years = [i[0] for i in data_15_hr.index.to_numpy()]
 
-    months = [i[1] for i in data_15_hr.index]
-    years = [i[0] for i in data_15_hr.index]
-    print(data_15_hr)
-
-    return data_15_hr, days,months,years, data_15_std
+    return data_15_hr, days, months, years, data_15_std
 
 
 def read_PMOA_all_stations():
@@ -119,7 +165,7 @@ def read_PMOA_all_stations():
 
     data_sel_yr = (
         (data_sel.groupby(['Station', 'Latitude', 'Longitude', times.dt.year, times.dt.month])[['PBOA_ug_m3']])
-        .median())
+        .mean())
     data_sel_std = ((data_sel.groupby(['Station','Latitude','Longitude', times.dt.year, times.dt.month])[['PBOA_ug_m3']])
                    .std())
 

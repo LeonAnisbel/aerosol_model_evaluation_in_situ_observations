@@ -40,7 +40,8 @@ def concat_lists(multi_lists):
 
 
 def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
-    global conc_mod_pol, conc_mod_pro, conc_mod_lip, conc_mod_ss, conc_mod_ss_tot
+    """ Iterates through the available observational data to perform model interpolation for ship data (changing location).
+    :return: dataframe with observational data and interpolated model results for polysaccharides """
     time_loc = datetime_to_integer(ds_btw['Date/Time'])  # convert datetime to int
     da_loc = ds_btw['Date/Time'].dt.day.values  # list with months
     mo_loc = ds_btw['Date/Time'].dt.month.values  # list with months
@@ -245,7 +246,33 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     return pd_da
 
 
+
+def interpolate_days_filter_exposition(path, exp, da_st, dates_end, m):
+    mod_da_btw, mod_ro_btw = [], []
+    btw_start_end = np.arange(da_st,
+                              dates_end.values[m],
+                              dtype="datetime64[D]").astype(datetime)
+    btw_start_end = [dt.strftime("%Y-%m-%d") for dt in pd.to_datetime(btw_start_end)]
+    btw_start_end_object = [datetime.strptime(data_btw, '%Y-%m-%d').date() for data_btw in btw_start_end]
+    months_btw_start_end = [i.month for i in btw_start_end_object]
+    days_btw_start_end = [i.day for i in btw_start_end_object]
+    years_btw_start_end = [i.year for i in btw_start_end_object]
+    print(days_btw_start_end, months_btw_start_end)
+
+    for m_id, mo_btw in enumerate(months_btw_start_end):
+        mod_da, mod_ro = utils_func.read_model(path, exp, days_btw_start_end[m_id], mo_btw,
+                                               years_btw_start_end[m_id], 'tracer')
+        mod_da_btw.append(mod_da)
+        mod_ro_btw.append(mod_ro)
+    mod_da_btw_ds = xr.concat(mod_da_btw, dim='time')
+    mod_ro_btw_ds = xr.concat(mod_ro_btw, dim='time')
+
+    return mod_da_btw_ds, mod_ro_btw_ds
+
+
 def interp_conc_stations(path, exp, obs, obs_tot, ID):
+    """ Iterates through the available observational data to perform model interpolation for fixed location stations.
+    :return: dataframe with observational data and interpolated model results for lipids and DCAA """
     start_4_mod, end_4_mod = [], []
     id_camp = []
     conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
@@ -264,25 +291,11 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
 
     for m, da_st in enumerate(dates_start.values):
         if ID[:3] == 'SVD' or ID[:2] == 'RS':
-            mod_da_btw, mod_ro_btw = [], []
-            btw_start_end = np.arange(da_st,
-                                      dates_end.values[m],
-                                      dtype="datetime64[D]").astype(datetime)
-            btw_start_end = [dt.strftime("%Y-%m-%d") for dt in pd.to_datetime(btw_start_end)]
-            btw_start_end_object = [datetime.strptime(data_btw, '%Y-%m-%d').date() for data_btw in btw_start_end]
-            months_btw_start_end = [i.month for i in btw_start_end_object]
-            days_btw_start_end = [i.day for i in btw_start_end_object]
-            years_btw_start_end = [i.year for i in btw_start_end_object]
-            print(days_btw_start_end, months_btw_start_end)
-
-            for m_id, mo_btw in enumerate(months_btw_start_end):
-                mod_da, mod_ro = utils_func.read_model(path, exp, days_btw_start_end[m_id], mo_btw,
-                                                       years_btw_start_end[m_id], 'tracer')
-                mod_da_btw.append(mod_da)
-                mod_ro_btw.append(mod_ro)
-            mod_da_btw_ds = xr.concat(mod_da_btw, dim='time')
-            mod_ro_btw_ds = xr.concat(mod_ro_btw, dim='time')
-
+            mod_da_btw_ds, mod_ro_btw_ds = interpolate_days_filter_exposition(path,
+                                                                              exp,
+                                                                              da_st,
+                                                                              dates_end,
+                                                                              m)
             interp_lim_start = get_interp_fixed_loc(lon,
                                                     lat,
                                                     mod_da_btw_ds,
@@ -327,8 +340,6 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
 
         id_camp.append(ID)
 
-    print(len(conc_obs_pol), len(conc_model_pol), '\n', conc_obs_pol, conc_model_pol)
-
         # create new dataframe to store the model data after interpolation together with obs.
 
     pd_da = pd.DataFrame({'ID': id_camp, 'Start Date/Time': start_4_mod, 'End Date/Time': end_4_mod,
@@ -355,7 +366,9 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
 
 
 
-def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
+def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days, months, years, var_names):
+    """ Iterates through the available observational data to perform model interpolation for Mace Head.
+    :return: dataframe with observational data and interpolated model results for total PMOA """
     id_camp = []
     conc_model_pol, conc_model_pro, conc_model_lip, conc_model_tot = [], [], [], []
     conc_model_ss, conc_model_omf, conc_model_ss_tot = [], [], []
@@ -363,21 +376,38 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
     conc_obs_ss, conc_obs_omf = [], []
     years_list, months_list, days_list = [], [], []
     path = global_vars.data_directory
+    start_date = []
+    end_date = []
 
     for m, da_st in enumerate(years):
 
-        mod_data, mod_ro_da = utils_func.read_model(path,
-                                                    exp,
-                                                    days[m],
-                                                    months[m],
-                                                    years[m],
-                                                    'tracer')
+        if ID == 'MH0209':
+            mod_da_btw_ds, mod_ro_btw_ds = interpolate_days_filter_exposition(path,
+                                                                              exp,
+                                                                              obs['Start Date/Time'][m],
+                                                                              obs['End Date/Time'],
+                                                                              m)
+            interp_lim_start = get_interp_fixed_loc(lon,
+                                                    lat,
+                                                    mod_da_btw_ds,
+                                                    mod_ro_btw_ds)
+            start_date.append(obs['Start Date/Time'][m])
+            end_date.append(obs['End Date/Time'][m])
 
-        interp_lim_start = get_interp_fixed_loc(lon,
-                                                lat,
-                                                mod_data,
-                                                mod_ro_da,
-                                                all_modes=False)
+        else:
+
+            mod_data, mod_ro_da = utils_func.read_model(path,
+                                                        exp,
+                                                        days[m],
+                                                        months[m],
+                                                        years[m],
+                                                        'tracer')
+
+            interp_lim_start = get_interp_fixed_loc(lon,
+                                                    lat,
+                                                    mod_data,
+                                                    mod_ro_da,
+                                                    all_modes=False)
 
         conc_model_pol.append(interp_lim_start[0])
         conc_model_pro.append(interp_lim_start[1])
@@ -390,9 +420,8 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
 
         conc_model_ss_tot.append(interp_lim_start[5])
 
-        conc_obs_tot.append(obs['PMOA'].values[m])
-        conc_obs_ss.append(obs['seasalt'].values[m])
-        # conc_obs_omf.append(obs['OMF'].values[m])
+        conc_obs_tot.append(obs[var_names[1]].values[m])
+        conc_obs_ss.append(obs[var_names[0]].values[m])
 
         years_list.append(years[m])
         months_list.append(months[m])
@@ -408,13 +437,20 @@ def interp_conc_arctic_stations(exp, obs, ID, lat, lon, days,months,years):
                           'years': years_list,
                           'conc_mod_tot': conc_model_tot,
                           'conc_obs_ss': conc_obs_ss,
-                          'conc_mod_ss': conc_model_ss,})
+                          'conc_mod_ss': conc_model_ss,
+                          'conc_mod_ss_tot': conc_model_ss_tot,})
                           # 'conc_obs_omf': conc_obs_omf, 'conc_mod_omf': conc_model_omf,
+    if ID == 'MH0209':
+        pd_da['Start Date/Time'] = start_date
+        pd_da['End Date/Time'] = end_date
 
     return pd_da
 
 
 def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
+    """ Iterates through the available observational data to perform model interpolation for stations within the Arctic
+    circle.
+    :return: dataframe with observational data and interpolated model results for total PMOA """
     id_camp, years_list, months_list = [], [], []
     conc_model_tot = []
     conc_obs_tot = []

@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 
 def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mod_oc, obs_oc, mac_na):
+    """ Merge data and create dataframe """
     da_pd = da_pd_nan.dropna(subset=[obs])
-    print(da_pd)
     # combining all omf obs and model into a datframe (new_omf_pol) for box plot
     obs_pd = (list(da_pd[mod].values) +
               list(da_pd[obs].values))
@@ -45,6 +45,8 @@ def rename_func(data_pd, na, new_na):
     return pd_new
 
 def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
+    """ Combines station data available for every biomolecule group and creates the pickle files with observational and
+    interpolated model results"""
     conc_pd = create_dataframe(dicc_va,
                                mod_key_na,
                                obs_key_na,
@@ -64,10 +66,5 @@ def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
         conc_pd_new = rename_func(conc_pd_to2, 'WAP', 'WAP ')
     if id_na == 'poly' or id_na == 'oc':
         conc_pd_new = conc_pd
-
-
-    # plot_functions.box_plot_vert(pd.concat([conc_pd_po, conc_pd_pr_new, conc_pd_li_new, conc_pd_to_new]),
-    #                              mac_names, ['pol', 'pro', 'lip'],
-    #                              'All_groups', [1e-6, 1e1])
 
     conc_pd_new.to_pickle(f'pd_files/{id_na}_conc_{global_vars.exp_name}.pkl')

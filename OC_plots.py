@@ -8,6 +8,7 @@ import global_vars
 import utils_plots
 
 def plot_text_all_stat(ax, conc_mod_obs, obs_col_na, mod_col_na, font, loc):
+    """ Adds to plot the text with statistics """
     obs = np.array(conc_mod_obs[obs_col_na].values)
     mod = np.array(conc_mod_obs[mod_col_na].values)
 
@@ -18,7 +19,9 @@ def plot_text_all_stat(ax, conc_mod_obs, obs_col_na, mod_col_na, font, loc):
                          f'NMB= {np.round(NMB, 2)} ')
     ax.text(loc[0], loc[1], formatted_pvalues, fontsize=font)
 
+
 def plot_fit(ax, conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
+    """Creates a two-panel scatter plot of modelled OC (SPMOAoff) and OC+PMOA (SPMOAon) .vs. observations of OM """
     font = 10
 
     pl = sns.scatterplot(data=conc_mod_obs, x=obs_col_na, y=mod_col_na, hue="Measurements", ax = ax)
@@ -58,6 +61,7 @@ def plot_fit(ax, conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
 
 
 def plot_box(ax, conc_mod_obs, col_na, yli, title, label, pos, right_pannel = False):
+    """Creates a two-panel box plot of modelled OC (SPMOAoff) and OC+PMOA (SPMOAon) .vs. observations of OM """
     font = 10
     my_pal = {"Model": "pink",
               "Observation": "palevioletred"}
@@ -98,7 +102,9 @@ def plot_box(ax, conc_mod_obs, col_na, yli, title, label, pos, right_pannel = Fa
 
 
 def plot_oc(conc_ss, ti, no_stat=False):
-    """Creates a two-panel box plot of modelled OC (SPMOAoff) and OC+PMOA (SPMOAon) .vs. observations of OM """
+    """Prepares the data to plot each station for both experiments of modelled OC concentration (SPMOAoff) and
+     OC+PMOA (SPMOAon) .vs. observations of OM . It also computes the statistics and calls the function that creates
+     the figures"""
 
     conc_total = conc_ss.copy()
     old_cols_names = ['OC Aerosol concentration',
@@ -171,25 +177,4 @@ def plot_oc(conc_ss, ti, no_stat=False):
                  [1e-5, 1e1],
                  [0.0002, 1.2])
     utils_plots.customize_legend_sv_fig(pl2, fig2, ti+'scatter_panel_plot')
-
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    # data paths
-    data_dir = "pd_files/"
-
-    try:
-        os.mkdir('plots_paper')
-    except OSError:
-
-        pass
-
-    mix_omf_conc = []
-    all_conc = []
-    conc = pd.read_pickle(f'{data_dir}oc_conc_{global_vars.exp_name}.pkl')
-
-    print(conc)
-
-    plot_oc(conc, 'OC')
 
