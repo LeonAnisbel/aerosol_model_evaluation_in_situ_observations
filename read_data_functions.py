@@ -84,6 +84,7 @@ def read_data(yr, var_names, monthly=False):
     else: dayfirst=True
     data_15 = data[var_names].copy(deep=True)
 
+    # data_15[pmoa] = data_15[pmoa]*1.9/1.4
     data_15['OMF'] = (data_15[pmoa].values /
                       (data_15[pmoa].values +
                        data_15[ss].values))    # data_15['OMF'] = data_15['MOA'].values/(data_15['MOA'].values+data_15['seasalt'].values) #*(1/0.3061)

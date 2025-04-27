@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from dask.dataframe.shuffle import ensure_cleanup_on_exception
+
 import global_vars
 import matplotlib.pyplot as plt
 
@@ -21,10 +23,17 @@ def fill_btw(axs, data, std, c, plot_std=True):
     if plot_std:
         min, max = ([i - j for i, j in zip(data.values, std)],
                     [i + j for i, j in zip(data.values, std)])
+        # axs.errorbar(np.arange(1, 13),
+        #              data.values,
+        #              yerr=np.array(std),
+        #              fmt='none',
+        #              capsize=5,
+        #              ecolor=c)
         axs.fill_between(np.arange(1, 13),
                          min, max,
                          facecolor=c,
                          alpha=0.1)
+
 
 def format_func(value, tick_number):
     N = int(value )
@@ -60,8 +69,12 @@ def expand_btwn_start_end_date(data_0209, vars):
 
 def plot_MC_monthly_seasonality(yr, var_names):
     data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
-    if yr == '0209': stat_exp = 'MH_Rinaldi'
-    else: stat_exp = 'MH'
+    if yr == '0209':
+        stat_exp = 'MH_Rinaldi'
+        pmoa_name = 'WIOM'
+    else:
+        stat_exp = 'MH'
+        pmoa_name = 'PMOA'
 
     _, _, months, _, _ = read_data_functions.read_data(yr, var_names)
     obs_MH_15, _, _, _, obs_MH_15_std = read_data_functions.read_data(yr,var_names, monthly=True)
@@ -116,29 +129,28 @@ def plot_MC_monthly_seasonality(yr, var_names):
     obs_MH_15 = concat_omf_mod_obs(data_omf_cesm, obs_MH_15, 'CESM',yr)
 
     obs_MH_15.rename(columns={var_names[1]:'Observations (SS)',
-                              var_names[2]:'Observations (PMOA)',
+                              var_names[2]:f'Observations ({pmoa_name})',
                               'OMF': 'Observations'}, inplace=True)
 
     data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
-    data_moa = obs_MH_15[['Model (PMOA)', 'Observations (PMOA)']].copy(deep=True)
+    data_moa = obs_MH_15[['Model (PMOA)', f'Observations ({pmoa_name})']].copy(deep=True)
     data_omf = obs_MH_15[['REcoM', 'REcoM+CESM', 'CESM', 'Observations']].copy(deep=True)
 
 
     fig, ax = plt.subplots(1,1, figsize=(5,5))
     cc = ['darkorange', 'limegreen', 'dodgerblue', 'black']
     data_omf.plot(ax = ax, color =cc)
-    # print(obs_MH_15_std)
-
-    #print(data_omf['Observations'], obs_MH_15_std['OMF'].values)
-
     fill_btw(ax, data_omf['Observations'], obs_MH_15_std['OMF'].values, 'gray')
+
+    plt.legend(loc='upper right')
     ax.set_ylabel('OMF',
                      fontsize=ff)
     ax.set_xlabel(' ')
     ax.set_xlabel('Months',
                  fontsize=ff)
     ax.set_xticklabels([])
-    xticks = np.arange(0,12)
+    ax.set_ylim([0, 0.8])
+    xticks = np.arange(1,13)
     ax.set_xticks(xticks)
     ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
     ax.xaxis.set_tick_params(labelsize=ff)
@@ -158,7 +170,7 @@ def plot_MC_monthly_seasonality(yr, var_names):
                      fontsize=ff)
 
     data_moa.plot(ax = ax[1], color = cc)
-    fill_btw(ax[1], data_moa['Observations (PMOA)'], obs_MH_15_std[var_names[2]].values,'gray' )
+    fill_btw(ax[1], data_moa[f'Observations ({pmoa_name})'], obs_MH_15_std[var_names[2]].values,'gray' )
     fill_btw(ax[1], data_moa['Model (PMOA)'], moa_std, 'r')
     ax[1].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
                      fontsize=ff)
@@ -170,7 +182,7 @@ def plot_MC_monthly_seasonality(yr, var_names):
         a.set_xlabel('Months',
                      fontsize=ff)
         a.set_xticklabels([])
-        xticks = np.arange(0,12)
+        xticks = np.arange(1, 13)
         a.set_xticks(xticks)
 
         a.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
