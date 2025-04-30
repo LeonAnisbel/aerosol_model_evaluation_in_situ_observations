@@ -456,8 +456,17 @@ def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
     conc_obs_tot = []
     conc_model_pol, conc_model_pro, conc_model_lip = [], [], []
     conc_model_tot, conc_model_oc = [], []
+    conc_obs_std = []
+    conc_model_ss = []
 
     path = global_vars.data_directory
+
+    if ID == 'AI0307':
+        multiyear=True
+        var_names='WIOM_ug_m3'
+    else:
+        multiyear=False
+        var_names='PBOA_ug_m3'
 
     for idx, yr in enumerate(years):
         mod_data, mod_ro_da = utils_func.read_model(path,
@@ -466,7 +475,8 @@ def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
                                                     months[idx],
                                                     yr,
                                                     'tracer',
-                                                    monthly=True)
+                                                    monthly=True,
+                                                    multiyear=multiyear)
         interp_lim_start = get_interp_fixed_loc(lon,
                                                 lat,
                                                 mod_data,
@@ -476,6 +486,8 @@ def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
         conc_model_pol.append(interp_lim_start[0])
         conc_model_pro.append(interp_lim_start[1])
         conc_model_lip.append(interp_lim_start[2])
+        conc_model_ss.append(interp_lim_start[3])
+
         conc_model_oc.append(interp_lim_start[4])
 
         conc_model_tot.append(np.sum([interp_lim_start[0],
@@ -485,11 +497,21 @@ def interp_all_arctic_stations(exp, obs, ID, lat, lon, days, months,years):
         id_camp.append(ID)
         years_list.append(yr)
         months_list.append(months[idx])
-        conc_obs_tot.append(obs['PBOA_ug_m3'].values[idx])
+        conc_obs_tot.append(obs[var_names].values[idx])
+
+        if ID == 'AI0307':
+            conc_obs_std.append(obs[f'{var_names}_std'].values[idx])
+        else:
+            conc_obs_std.append(np.nan)
+
 
     pd_da = pd.DataFrame({'ID': id_camp,
                           'months': months_list,
                           'years': years_list,
-                          'conc_obs_tot': conc_obs_tot, 'conc_mod_tot': conc_model_tot,})
+                          'conc_obs_tot': conc_obs_tot,
+                          'conc_obs_std': conc_obs_std,
+                          'conc_mod_tot': conc_model_tot,
+                          'conc_mod_ss': conc_model_ss,
+                          })
 
     return pd_da

@@ -5,7 +5,7 @@ import read_data_functions
 from scipy.interpolate import griddata
 
 
-def read_model(path, exp, day, mo, yr, ext, monthly=False):
+def read_model(path, exp, day, mo, yr, ext, monthly=False, multiyear=False):
     """ Reads the model data for the specific month and year of the observational data
     :return: datasets of aerosol concentration and air density """
     data_dir = f"{path}"
@@ -15,26 +15,31 @@ def read_model(path, exp, day, mo, yr, ext, monthly=False):
         mo_str = f'{mo}'
     
     print(yr, mo_str, day)
+
     files = f'{data_dir}{exp}_{yr}{mo_str}.01_{ext}.nc'
     file_ro = f'{data_dir}{exp}_{yr}{mo_str}.01_vphysc.nc'
 
-    if os.path.exists(files):
-        print('reading ', files, 'for interpolation with data month = ', mo)
-        data = read_data_functions.read_model_spec_data(files)
-        data_ro = read_data_functions.read_model_spec_data(file_ro)
+    if multiyear:
+        files = [f'{data_dir}{exp}_{y}{mo_str}.01_{ext}.nc' for y in yr]
+        file_ro = [f'{data_dir}{exp}_{y}{mo_str}.01_vphysc.nc' for y in yr]
 
-        da_ro, da_ds = [], []
-        if monthly:
-            da_m_ro = data_ro['rhoam1'].isel(lev=46)
-            da_m_ds = data.isel(lev=46)
-        else:
-            ti_sel = [day * 2 - 1, day * 2 - 2]  # based on a 12h output
-            print(data.time.values[ti_sel], ti_sel)
-            for ti in ti_sel:
-                da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))
-                da_ds.append(data.isel(time=ti).isel(lev=46))
-            da_m_ro = xr.concat(da_ro, dim='time')
-            da_m_ds = xr.concat(da_ds, dim='time')
+    # if os.path.exists(files):
+    print('reading ', files, 'for interpolation with data month = ', mo)
+    data = read_data_functions.read_model_spec_data(files)
+    data_ro = read_data_functions.read_model_spec_data(file_ro)
+
+    da_ro, da_ds = [], []
+    if monthly or multiyear:
+        da_m_ro = data_ro['rhoam1'].isel(lev=46)
+        da_m_ds = data.isel(lev=46)
+    else:
+        ti_sel = [day * 2 - 1, day * 2 - 2]  # based on a 12h output
+        print(data.time.values[ti_sel], ti_sel)
+        for ti in ti_sel:
+            da_ro.append(data_ro['rhoam1'].isel(time=ti).isel(lev=46))
+            da_ds.append(data.isel(time=ti).isel(lev=46))
+        da_m_ro = xr.concat(da_ro, dim='time')
+        da_m_ds = xr.concat(da_ds, dim='time')
 
     return da_m_ds, da_m_ro
 

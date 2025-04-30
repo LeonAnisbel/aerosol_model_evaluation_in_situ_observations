@@ -183,7 +183,9 @@ def read_PMOA_all_stations():
 
 
 def read_model_spec_data(file):
-    return xr.open_mfdataset(file, concat_dim='time', combine='nested')
+    return xr.open_mfdataset(file,
+                             concat_dim='time',
+                             combine='nested')
 
 
 #reading data

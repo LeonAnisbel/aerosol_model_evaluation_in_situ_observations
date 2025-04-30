@@ -134,11 +134,11 @@ def plot_MC_monthly_seasonality(yr, var_names):
 
     data_ss = obs_MH_15[['Model (SS)', 'Observations (SS)']].copy(deep=True)
     data_moa = obs_MH_15[['Model (PMOA)', f'Observations ({pmoa_name})']].copy(deep=True)
-    data_omf = obs_MH_15[['REcoM', 'REcoM+CESM', 'CESM', 'Observations']].copy(deep=True)
+    data_omf = obs_MH_15[['REcoM', 'CESM', 'REcoM+CESM', 'Observations']].copy(deep=True)
 
 
     fig, ax = plt.subplots(1,1, figsize=(5,5))
-    cc = ['darkorange', 'limegreen', 'dodgerblue', 'black']
+    cc = ['darkorange','dodgerblue', 'limegreen', 'black']
     data_omf.plot(ax = ax, color =cc)
     fill_btw(ax, data_omf['Observations'], obs_MH_15_std['OMF'].values, 'gray')
 
@@ -158,25 +158,24 @@ def plot_MC_monthly_seasonality(yr, var_names):
     fig.tight_layout()
     plt.savefig(f'plots/{stat_exp}{yr}_monthly_OMF_{global_vars.exp_name}.png', dpi=300)
 
-
-
-    fig, ax = plt.subplots(1,2, figsize=(10,5))
-    ax.flatten()
+    fig, axs = plt.subplots(2,2, figsize=(10,8))
+    axs.flatten()
+    print(axs)
     cc = ['darkred', 'black']
-    data_ss.plot(ax = ax[0], color = cc)
-    fill_btw(ax[0],data_ss['Observations (SS)'], obs_MH_15_std[var_names[1]].values, 'gray')
-    fill_btw(ax[0], data_ss['Model (SS)'], ss_std, 'r')
-    ax[0].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+    data_ss.plot(ax = axs[0][0], color = cc)
+    fill_btw(axs[0][0],data_ss['Observations (SS)'], obs_MH_15_std[var_names[1]].values, 'gray')
+    fill_btw(axs[0][0], data_ss['Model (SS)'], ss_std, 'r')
+    axs[0][0].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
                      fontsize=ff)
 
-    data_moa.plot(ax = ax[1], color = cc)
-    fill_btw(ax[1], data_moa[f'Observations ({pmoa_name})'], obs_MH_15_std[var_names[2]].values,'gray' )
-    fill_btw(ax[1], data_moa['Model (PMOA)'], moa_std, 'r')
-    ax[1].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+    data_moa.plot(ax = axs[0][1], color = cc)
+    fill_btw(axs[0][1], data_moa[f'Observations ({pmoa_name})'], obs_MH_15_std[var_names[2]].values,'gray' )
+    fill_btw(axs[0][1], data_moa['Model (PMOA)'], moa_std, 'r')
+    axs[0][1].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
                      fontsize=ff)
 
     indices = [r'$\bf{(a)}$', r'$\bf{(b)}$']
-    for a, i in zip(ax, indices):
+    for a, i in zip(axs[0], indices):
         a.set_xlabel(' ')
         a.set_title(i, loc='left')
         a.set_xlabel('Months',
@@ -189,6 +188,11 @@ def plot_MC_monthly_seasonality(yr, var_names):
         a.xaxis.set_tick_params(labelsize=ff)
 
         a.tick_params(axis='both', labelsize=str(ff))
+        a.set_title('Mace Head', loc='center')
+
+    plot_AI_monthly_seasonality(axs[1][0], '0307', panel_fig=True)
+
+    fig.delaxes(axs[1][1])
 
     fig.tight_layout()
     plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png')
@@ -292,8 +296,84 @@ def plot_all_arctic_stations():
     plt.savefig(f'plots/all_arctic_stations_conc_{global_vars.exp_name}.png')
 
 
+def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
+    data_moa = pd.read_pickle(f'pd_files/AI{yr}_conc_{global_vars.exp_name}.pkl')
+
+    if panel_fig:
+        ax = ax
+        ax.set_title(r'$\bf{(c)}$', loc='left')
+    else:
+        fig, ax = plt.subplots(1,1, figsize=(5,5))
+
+    ax.set_title('Amsterdam Island')
+    cc = ['darkred', 'black']
+    ax.plot(data_moa['months'],
+            data_moa['conc_mod_tot'],
+            color = cc[0],
+            label = 'Model (PMOA)')
+    ax.plot(data_moa['months'],
+            data_moa['conc_obs_tot'],
+            color = cc[1],
+            label = 'Observations (WIOM)')
+
+    fill_btw(ax, data_moa[f'conc_obs_tot'],
+             data_moa['conc_obs_std'].values,
+             'gray' )
+    ax.set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+                     fontsize=ff)
+
+    ax.legend()
+    ax.set_xlabel(' ')
+    ax.set_xlabel('Months',
+                 fontsize=ff)
+    ax.set_xticklabels([])
+    xticks = np.arange(1, 13)
+    ax.set_xticks(xticks)
+
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
+    ax.xaxis.set_tick_params(labelsize=ff)
+
+    ax.tick_params(axis='both', labelsize=str(ff))
+
+    if not panel_fig:
+        fig.tight_layout()
+        plt.savefig(f'plots/AI{yr}_monthly_conc_{global_vars.exp_name}.png')
+        plt.close()
+
+        # plot also SS
+        fig, ax = plt.subplots(1,1, figsize=(5,5))
+        ax.plot(data_moa['months'],
+                data_moa['conc_mod_ss'],
+                color = 'green',
+                label = 'Model (SS)')
+        plt.legend()
+
+        ax.set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+                         fontsize=ff)
+
+        ax.set_xlabel(' ')
+        ax.set_xlabel('Months',
+                     fontsize=ff)
+        ax.set_xticklabels([])
+        xticks = np.arange(1, 13)
+        ax.set_xticks(xticks)
+
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
+        ax.xaxis.set_tick_params(labelsize=ff)
+
+        ax.tick_params(axis='both', labelsize=str(ff))
+
+        fig.tight_layout()
+        plt.savefig(f'plots/AI{yr}_monthly_conc_SS_{global_vars.exp_name}.png')
+        plt.close()
+
+
 
 if __name__ == '__main__':
+    year = '0307'
+    print('start seasonality at AI', year)
+    plot_AI_monthly_seasonality(None, year)
+
     year = '0209'
     print('start seasonality at MH', year)
     plot_MC_monthly_seasonality(year,
