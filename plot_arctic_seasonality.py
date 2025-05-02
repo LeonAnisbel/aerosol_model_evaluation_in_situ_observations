@@ -165,13 +165,13 @@ def plot_MC_monthly_seasonality(yr, var_names):
     data_ss.plot(ax = axs[0][0], color = cc)
     fill_btw(axs[0][0],data_ss['Observations (SS)'], obs_MH_15_std[var_names[1]].values, 'gray')
     fill_btw(axs[0][0], data_ss['Model (SS)'], ss_std, 'r')
-    axs[0][0].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+    axs[0][0].set_ylabel('Concentration (µg m$^{-3}$)',
                      fontsize=ff)
 
     data_moa.plot(ax = axs[0][1], color = cc)
     fill_btw(axs[0][1], data_moa[f'Observations ({pmoa_name})'], obs_MH_15_std[var_names[2]].values,'gray' )
     fill_btw(axs[0][1], data_moa['Model (PMOA)'], moa_std, 'r')
-    axs[0][1].set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+    axs[0][1].set_ylabel('Concentration (µg m$^{-3}$)',
                      fontsize=ff)
 
     indices = [r'$\bf{(a)}$', r'$\bf{(b)}$']
@@ -319,7 +319,7 @@ def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
     fill_btw(ax, data_moa[f'conc_obs_tot'],
              data_moa['conc_obs_std'].values,
              'gray' )
-    ax.set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+    ax.set_ylabel('Concentration (µg m$^{-3}$)',
                      fontsize=ff)
 
     ax.legend()
@@ -348,7 +348,7 @@ def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
                 label = 'Model (SS)')
         plt.legend()
 
-        ax.set_ylabel('Concentration ($\mu g\ m^{-3}$)',
+        ax.set_ylabel('Concentration (µg m$^{-3}$)',
                          fontsize=ff)
 
         ax.set_xlabel(' ')
