@@ -69,6 +69,7 @@ def read_obs_data_loc(main_dir, loc_dir):
 
 def read_data(yr, var_names, monthly=False):
     da_dir = global_vars.main_data_dir+'MH_PMOAseasalt_'+yr+'.csv'
+    print('Reading data from '+da_dir)
     #da_dir = '/home/manuel/Downloads/'+'MH_PMOAseasalt_'+yr+'.csv'
 
     date = var_names[0]

@@ -8,14 +8,16 @@ import matplotlib.pyplot as plt
 import read_data_functions
 
 ff = 12
+omf_var = 'OMF_mod_tot'
+
 
 def concat_omf_mod_obs(data_omf, obs_MH_15, col_name, yr):
     if yr == '0209':
-        obs_MH_15[col_name] = data_omf['OMF_mod_tot'].values
+        obs_MH_15[col_name] = data_omf[omf_var].values
     else:
         times = pd.to_datetime(data_omf['Start Date/Time'], dayfirst=True)
-        data_omf_monthly = data_omf.groupby([times.dt.year, times.dt.month])[['OMF_mod_tot']].mean()
-        obs_MH_15[col_name] = data_omf_monthly['OMF_mod_tot'].values
+        data_omf_monthly = data_omf.groupby([times.dt.year, times.dt.month])[[omf_var]].mean()
+        obs_MH_15[col_name] = data_omf_monthly[omf_var].values
 
     return obs_MH_15
 
@@ -91,7 +93,7 @@ def plot_MC_monthly_seasonality(yr, var_names):
         pd_data = []
         pd_data_std = []
         for data_0209 in [data_omf_recom, data_omf_recom_cesm, data_omf_cesm]:
-            data_0209_omf_hr, data_0209_omf_std = expand_btwn_start_end_date(data_0209, ['OMF_mod_tot'])
+            data_0209_omf_hr, data_0209_omf_std = expand_btwn_start_end_date(data_0209, [omf_var])
 
             pd_data.append(data_0209_omf_hr)
             pd_data_std.append(data_0209_omf_std)
@@ -155,19 +157,21 @@ def plot_MC_monthly_seasonality(yr, var_names):
     ax.xaxis.set_major_formatter(plt.FuncFormatter(format_func))
     ax.xaxis.set_tick_params(labelsize=ff)
     ax.tick_params(axis='both', labelsize=str(ff))
+    ax.grid(linestyle='--', linewidth=0.4, alpha=0.2)
     fig.tight_layout()
     plt.savefig(f'plots/{stat_exp}{yr}_monthly_OMF_{global_vars.exp_name}.png', dpi=300)
 
     fig, axs = plt.subplots(2,2, figsize=(10,8))
     axs.flatten()
     print(axs)
-    cc = ['darkred', 'black']
+    cc = ['darkblue', 'black']
     data_ss.plot(ax = axs[0][0], color = cc)
     fill_btw(axs[0][0],data_ss['Observations (SS)'], obs_MH_15_std[var_names[1]].values, 'gray')
-    fill_btw(axs[0][0], data_ss['Model (SS)'], ss_std, 'r')
+    fill_btw(axs[0][0], data_ss['Model (SS)'], ss_std, 'darkblue')
     axs[0][0].set_ylabel('Concentration (µg m$^{-3}$)',
                      fontsize=ff)
 
+    cc = ['darkred', 'black']
     data_moa.plot(ax = axs[0][1], color = cc)
     fill_btw(axs[0][1], data_moa[f'Observations ({pmoa_name})'], obs_MH_15_std[var_names[2]].values,'gray' )
     fill_btw(axs[0][1], data_moa['Model (PMOA)'], moa_std, 'r')
@@ -189,10 +193,10 @@ def plot_MC_monthly_seasonality(yr, var_names):
 
         a.tick_params(axis='both', labelsize=str(ff))
         a.set_title('Mace Head', loc='center')
-
-    plot_AI_monthly_seasonality(axs[1][0], '0307', panel_fig=True)
-
-    fig.delaxes(axs[1][1])
+        a.grid(linestyle='--', linewidth=0.4, alpha=0.2)
+    plot_AI_monthly_seasonality(axs[1][1], '0307', panel_fig=True)
+    axs[1][1].grid(linestyle='--', linewidth=0.4, alpha=0.2)
+    fig.delaxes(axs[1][0])
 
     fig.tight_layout()
     plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png')

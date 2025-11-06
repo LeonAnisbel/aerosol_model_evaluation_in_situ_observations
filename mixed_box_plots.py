@@ -122,7 +122,7 @@ if __name__ == '__main__':
     plt.savefig(f'plots/SS_conc_SS submicrom_box_{global_vars.exp_name}.png',dpi = 300)
     plt.close()
 
-    fig, ax = plt.subplots(figsize=(12,8))#15, 8
+    fig, ax = plt.subplots(figsize=(13,8))#15, 8
     PMOA_plots.box_plot_vert(ax, pd.concat([mix_omf_conc[0], mix_omf_conc[1],
                              mix_omf_conc[2]]),
                               mac_names, ['pol', 'pro', 'lip'],

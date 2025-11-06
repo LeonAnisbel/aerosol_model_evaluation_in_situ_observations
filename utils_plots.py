@@ -47,7 +47,7 @@ def add_species_text_name(ax, mol_name, loc1, loc2, f):
             mol_name,
             fontsize= f,
             weight='bold',
-            bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+            bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 6})
 
 
 
@@ -57,7 +57,7 @@ def customize_legend_sv_fig(pl, fig, title):
     fig.legend(handles=handles,
                        labels= labels,
                        ncol=4,
-                       bbox_to_anchor=(0.53, 1.01),
+                       bbox_to_anchor=(0.53, 1.02),
                        loc='upper center',
                        fontsize=12)
     fig.tight_layout()

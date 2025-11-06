@@ -60,9 +60,8 @@ def plot_fit(ax, conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
     return pl
 
 
-def plot_box(ax, conc_mod_obs, col_na, yli, title, label, pos, right_pannel = False):
+def plot_box(ax, conc_mod_obs, col_na, yli, title, label, pos, font, right_pannel = False):
     """Creates a two-panel box plot of modelled OC (SPMOAoff) and OC+PMOA (SPMOAon) .vs. observations of OM """
-    font = 10
     my_pal = {"Model": "pink",
               "Observation": "palevioletred"}
 
@@ -75,7 +74,7 @@ def plot_box(ax, conc_mod_obs, col_na, yli, title, label, pos, right_pannel = Fa
                      ax = ax,
                      flierprops=flier,
                      width=.5)
-    utils_plots.add_species_text_name(ax, title + '|OM$_{aer}$', pos, 4, 8)
+    utils_plots.add_species_text_name(ax, title + '|OM$_{aer}$', pos, 4, font-2)
 
     ax.tick_params(axis='both', labelsize=font)
     ax.set_ylabel( 'Aerosol concentration (µg m$^{-3}$)')
@@ -106,13 +105,14 @@ def plot_oc(conc_ss, ti, no_stat=False):
      OC+PMOA (SPMOAon) .vs. observations of OM . It also computes the statistics and calls the function that creates
      the figures"""
 
+    f = 8
     conc_total = conc_ss.copy()
     old_cols_names = ['OC Aerosol concentration',
                 'Aerosol Concentration (µg m$^{-3}$)']
     title_list = ['OC', '(OC+PMOA)']
     list_stat = ['NAO','CVAO', 'WAP']
 
-    fig1, axs1 = plt.subplots(1, 2, figsize=(6, 5))
+    fig1, axs1 = plt.subplots(1, 2, figsize=(6, 4))
     axes1 = axs1.flatten()
 
     bool_panel = [False, True]
@@ -128,6 +128,7 @@ def plot_oc(conc_ss, ti, no_stat=False):
                       title,
                        lab,
                       pos,
+                       f+2,
                       right_pannel=panel)
 
         if not no_stat:
@@ -147,7 +148,7 @@ def plot_oc(conc_ss, ti, no_stat=False):
                                          f'\n {np.round(mean_bias, 2)} '
                                          f'\n {np.round(NMB, 2)} ' 
                                          f'\n    {np.round(len(obs_oc), 2)} ')
-                ax1.text(stat_pos[i], 0.0000105,  formatted_pvalues, fontsize=6)
+                ax1.text(stat_pos[i], 0.0000105,  formatted_pvalues, fontsize=f-2)
 
         conc_pd = pd.DataFrame(data={'Measurements': conc_ss['Measurements'].values[:len(conc_ss[conc_ss['']=='Model'][old_cols].values)],
                                         f'Model {title} concentration': conc_ss[conc_ss['']=='Model'][old_cols].values,
@@ -155,7 +156,7 @@ def plot_oc(conc_ss, ti, no_stat=False):
         obs_col_na = 'Observations OM concentration (µg m$^{-3}$)'
         mod_col_na = f'Model {title} concentration'
 
-        plot_text_all_stat(ax1, conc_pd, obs_col_na, mod_col_na, 8, [0.002, 0.00002])
+        plot_text_all_stat(ax1, conc_pd, obs_col_na, mod_col_na, f, [0.002, 0.00002])
 
     utils_plots.customize_legend_sv_fig(pl1, fig1, ti+'box_panel_plot')
 
