@@ -5,7 +5,13 @@ from scipy.stats import linregress
 import numpy as np
 
 def rename_func(data_pd, col, na, new_na):
-    """Renames columns of the data_pd data frame from the old name "na" to "new_na" """
+    """
+    Reformat columns names. Renames columns of the data_pd data frame from the old name "na" to "new_na"
+    :var data_pd: dataframe
+    :param na: argument name to replace
+    :var new_na: new name to fill with updated "na" name
+    :return: new dataframe
+    """
     pd_new = data_pd
     list_col = data_pd[col].to_list()
     for i in range(len(list_col)):
@@ -18,7 +24,12 @@ def rename_func(data_pd, col, na, new_na):
 
 
 def get_stat(obs, mod):
-    """Computes statistical indexes"""
+    """
+    Function to compute statistics
+    :var obs: observation data
+    :var mod: model data
+    :return: RMSE, mean_bias,NMB, pearsons_coeff, pval_corr
+    """
     MSE = mean_squared_error(obs, mod)
 
     RMSE = math.sqrt(MSE)
@@ -35,6 +46,14 @@ def get_stat(obs, mod):
 
 
 def set_log_ax(axis, x, y, style):
+    """
+    Adding diagonal lines in logarithmic axis
+    :param axis: matplotlib axis
+    :var x: x axis values
+    :var y: y axis values
+    :param style: line style
+    :return: None
+    """
     axis.loglog(x, y,
               color="black",
               linestyle=style,
@@ -43,6 +62,15 @@ def set_log_ax(axis, x, y, style):
 
 
 def add_species_text_name(ax, mol_name, loc1, loc2, f):
+    """
+    Add species text name to box plot
+    :param ax: matplotlib axes
+    :param mol_name: species name
+    :param loc1: x-axis location
+    :param loc2: y-axis location
+    :param f: font size
+    :return: None
+    """
     ax.text(loc1, loc2,
             mol_name,
             fontsize= f,
@@ -52,21 +80,32 @@ def add_species_text_name(ax, mol_name, loc1, loc2, f):
 
 
 def customize_legend_sv_fig(pl, fig, title):
-    """ Customize box plots  """
+    """
+    Customize box plots
+    :var pl: matplotlib object
+    :param fig: figure object
+    :param title: figure title
+    :return : None
+    """
     handles, labels = pl.get_legend_handles_labels()
     fig.legend(handles=handles,
-                       labels= labels,
-                       ncol=4,
-                       bbox_to_anchor=(0.53, 1.02),
-                       loc='upper center',
-                       fontsize=12)
+               labels= labels,
+               ncol=4,
+               bbox_to_anchor=(0.53, 1.02),
+               loc='upper center',
+               fontsize=12)
     fig.tight_layout()
 
-    plt.savefig(f'plots/{title}.png',dpi = 300)#{title}_{global_vars.exp_name}
+    plt.savefig(f'plots/{title}.png',
+                dpi = 300)#{title}_{global_vars.exp_name}
     plt.close()
 
 
 def get_marker_flier():
+    """
+    Marker properties for box plot
+    :return: dictionary with marker properties
+    """
     return dict(marker='D',
               markerfacecolor='gray',
               markersize=2.5,

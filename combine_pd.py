@@ -4,7 +4,18 @@ import pandas as pd
 import numpy as np
 
 def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mod_oc, obs_oc, mac_na):
-    """ Merge data and create dataframe """
+    """
+    Combines all obs and model into a dataframe
+    :var da_pd_nan: dataframe with omf
+    :param mod: argument name for model interpolated results
+    :param obs: argument name for obs values
+    :param mod_ss: argument name for model SS values
+    :param obs_ss: argument name for obs SS values
+    :param mod_oc: argument name for model OC values
+    :param obs_oc: argument name for obs OC values
+    :param mac_na: campaign Id
+    :return: new dataframe with combined data
+    """
     da_pd = da_pd_nan.dropna(subset=[obs])
     # combining all omf obs and model into a datframe (new_omf_pol) for box plot
     obs_pd = (list(da_pd[mod].values) +
@@ -34,6 +45,13 @@ def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mod_oc, obs_oc, mac_na
 
 
 def rename_func(data_pd, na, new_na):
+    """
+    Rename dataframe argument names
+    :var data_pd: dataframe
+    :param na: argument name to replace
+    :var new_na: new name to fill with updated "na" name
+    :return: new dataframe
+    """
     pd_new = data_pd
     list_col = data_pd['Measurements'].to_list()
     for i in range(len(list_col)):
@@ -45,8 +63,17 @@ def rename_func(data_pd, na, new_na):
     return pd_new
 
 def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
-    """ Combines station data available for every biomolecule group and creates the pickle files with observational and
-    interpolated model results"""
+    """
+    Combines station data available for every biomolecule group and creates the pickle files with observational and
+    interpolated model results. In some cases for the repeated station names slight changes are introduced to facilitate the
+    multipanel box plot later on.
+    :param dicc_va: dictionary with model and observation data
+    :param mac_names: list of campaign names
+    :param mod_key_na: model key name
+    :param obs_key_na: observation key name
+    :param id_na: campaign id name
+    :return: None
+    """
     conc_pd = create_dataframe(dicc_va,
                                mod_key_na,
                                obs_key_na,

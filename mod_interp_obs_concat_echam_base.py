@@ -7,10 +7,21 @@ from datetime import datetime
 
 
 def datetime_to_integer(dt_time):
+    """
+    Converts a datetime object to an integer.
+    """
     return pd.to_datetime(dt_time).astype(int) * 1e9  # 10000*dt_time.year + 100*dt_time.month + dt_time.day
 
 
 def get_interp_fixed_loc(lo, la, mod_da, mod_ro_da):
+    """
+    Calls interpolation function and returns interpolated model data for point locations.
+    :param lo: station location longitude
+    :param la: station location latitude
+    :param mod_da: model dataset
+    :param mod_ro_da: model dataset with air density
+    :return: Interpolated values for SS, OC and SS all sizes
+    """
     mi_ma_lon, mi_ma_lat = [lo, lo], [la, la]
 
     interp_vars = utils_func.start_interp(mod_da,
@@ -26,6 +37,11 @@ def get_interp_fixed_loc(lo, la, mod_da, mod_ro_da):
 
 
 def concat_lists(multi_lists):
+    """
+    Concatenate multiple lists into one numpy array.
+    :param multi_lists: list of interpolated values
+    :return: array of concatenated values
+    """
     if len(multi_lists) > 1:
         new_concat_list = []
         for i in range(len(multi_lists)):
@@ -36,6 +52,18 @@ def concat_lists(multi_lists):
 
 
 def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
+    """
+    Iterates through the available observational data to perform model interpolation for ship data (changing location).
+    Interpolates model results to each location and then average according to limits
+    Use for ship-based campaigns (PASCAL and PI_ICE)
+    :var path: path to model data
+    :var exp: model experiment name
+    :var ds_btw: dataframe with ship trajectory
+    :var ds_sub: dataframe with submicron aerosol concentration
+    :var ds_lim: dataframe with all sizes aerosol concentration
+    :param ID: Campaign ID
+    :return: Dataframe with observation, interpolated model values, date, species and campaign name for polysaccharides
+    """
     global conc_mod_ss, conc_mod_ss_tot
     time_loc = datetime_to_integer(ds_btw['Date/Time'])  # convert datetime to int
     da_loc = ds_btw['Date/Time'].dt.day.values  # list with months
@@ -46,9 +74,7 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
     da_start = ds_lim['Start Date/Time'].dt.day.values  # list with months
     mo_start = ds_lim['Start Date/Time'].dt.month.values  # list with months
     yr_start = ds_lim['Start Date/Time'].dt.year.values  # list with months
-
     time_var_end = datetime_to_integer(ds_lim['End Date/Time'])  # convert datetime to int
-    mo_end = ds_lim['End Date/Time'].dt.month.values  # list with months
 
     start_4_mod, end_4_mod = [], []
     conc_model_oc = []
@@ -63,14 +89,9 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
 
         # times, lats and lons between start and end
         conc_mod_ss, conc_mod_ss_tot, conc_mod_oc = [], [], []
-        interp_btw = []
-
         interp_btw_oc, interp_btw_ss, interp_btw_ss_tot = [], [], []
 
         # saving lats, longs and months between start and end into a list
-        lat_btw, lon_btw, date_btw = [], [], []
-        init_date_btw = [ds_btw['Date/Time'].dt.day.values[0], mo_loc[0], ds_btw['Date/Time'].dt.year.values[0]]
-
         lat_btw, lon_btw, mo_btw = [], [], []
         dates_btw = []
         dates_btw_btw = []
@@ -202,6 +223,16 @@ def assign_loc_ship(path, exp, ds_btw, ds_sub, ds_lim, ID):
 
 
 def interp_conc_stations(path, exp, obs, obs_tot, ID):
+    """
+    Iterates through the available observational data to perform model interpolation for fixed location stations.
+    Also saves dataframe in a pickle file
+    :param path: Path to the data directory where model data is stored
+    :param exp: model experiment ID
+    :param obs: observation data submicron size (aerosol concentration)
+    :param obs_tot: observation data all sizes (aerosol concentration)
+    :param ID: Id of the observation campaign
+    :return: dataframe with observational data and interpolated model results for lipids and DCAA
+    """
     start_4_mod, end_4_mod = [], []
     id_camp = []
     conc_model_ss, conc_model_oc, conc_model_ss_tot = [], [], []
@@ -247,7 +278,6 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
                                                     mod_data,
                                                     mod_ro_da)
 
-        # get_dataframe()
 
         start_4_mod.append(obs['Start Date/Time'].values[m])
         end_4_mod.append(obs['End Date/Time'].values[m])
