@@ -5,7 +5,14 @@ import utils_plots
 import cartopy.crs as ccrs
 
 def function_plot_two_pannel(ax, location, names, ff):
-    """Map of station location """
+    """
+    Plots map of station location including the acronyms
+    :param ax: matplotlib axes
+    :param location: station location
+    :param names: station names
+    :param ff: font size
+    :return: None
+    """
     ax.coastlines(resolution='110m', color='gray')
     ax.set_extent([-80, 30, -90, 90])
 
@@ -42,10 +49,16 @@ def function_plot_two_pannel(ax, location, names, ff):
     return ax
 
 
-def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
-    """Plotting model values and ovservations of OMF and aerosol mass concentration"""
+def box_plot_vert(ax, dict_df, mol_name, lim):
+    """
+    Plotting model values and ovservations of OMF and aerosol mass concentration
+    :param ax: matplotlib axes
+    :param dict_df: dataframe with observations and interpolated model values for all species and stations
+    :param mol_name: name of species
+    :param lim: lower and upper y-axis limits
+    :return: None
+    """
     f = 18
-    states_palette = sns.color_palette("seismic", n_colors=4)
     my_pal = {"Model offline OMF": "skyblue",
               "ECHAM-HAM aerosol concentration": "pink",
               "Observation OMF": "royalblue",
@@ -64,7 +77,6 @@ def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
                      palette=my_pal,
                      flierprops=flier,
                      width=.7)
-
     # The box shows the quartiles of the dataset while the whiskers extend to show the rest of the distribution, except
     # for points that are determined to be “outliers” using a method that is a function of the inter-quartile range.
 
@@ -81,7 +93,10 @@ def box_plot_vert(ax, dict_df, mol_name, ID, title, lim):
         df_stat = dict_df[dict_df["Measurements"] == stat]
         n = len(df_stat[df_stat[""]==my_pal_keys_list[-1][-1]]["Aerosol OMF"])
         formatted_pvalues = (f'n = {np.round(n, 2)} ')
-        ax.text(stat_pos[i], 0.000008, formatted_pvalues, fontsize=f-2)
+        ax.text(stat_pos[i],
+                8e-6,
+                formatted_pvalues,
+                fontsize=f-2)
 
         for var in my_pal_keys_list:
             print(stat, var, '\n')

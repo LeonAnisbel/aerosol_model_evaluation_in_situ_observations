@@ -6,14 +6,32 @@ import utils_plots
 
 
 def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
+    """
+    creates Old SS scatter plot of model vs. observations
+    :var conc_mod_obs: dataframe with SS concentrations from observations and model interpolated results
+    :var obs_col_na: column name of observations
+    :var mod_col_na: column name of model values
+    :param title: fig title
+    :param xli: x-axis max. limit
+    :param yli: y-axis max. limit
+    :param loc:
+    :return: None
+    """
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.scatterplot(data=conc_mod_obs, x=obs_col_na, y=mod_col_na, hue="Measurements")
+    sns.scatterplot(data=conc_mod_obs,
+                    x=obs_col_na,
+                    y=mod_col_na,
+                    hue="Measurements")
     lims = [
         np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
         np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
     ]
-    ax.plot(lims, lims, 'k--', alpha=0.75, zorder=0, label='1:1 line')
-    # print(lims)
+    ax.plot(lims,
+            lims,
+            'k--',
+            alpha=0.75,
+            zorder=0,
+            label='1:1 line')
 
     # Fitting poly data
     obs = np.array(conc_mod_obs[obs_col_na].values)
@@ -24,7 +42,8 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
                          f'\n R= {np.round(R, 2)}', f'\n pval= {np.round(pval, 2)}')
     print('SEA SALT STATISTICS', formatted_pvalues)
 
-    ax.tick_params(axis='both', labelsize='14')
+    ax.tick_params(axis='both',
+                   labelsize='14')
     ax.yaxis.get_label().set_fontsize(14)
     ax.xaxis.get_label().set_fontsize(14)
     ax.set_yscale('log')
@@ -32,15 +51,25 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
     ax.set_xlim(xli)
     ax.set_ylim(yli)
     plt.legend(loc='upper left')
-    ax.grid(linestyle='--', linewidth=0.4)
+    ax.grid(linestyle='--',
+            linewidth=0.4)
     fig.tight_layout()
 
-    plt.savefig(f'plots/SS_conc_{title}_scatter_{global_vars.exp_name}.png',dpi = 300)
+    plt.savefig(f'plots/SS_conc_{title}_scatter_{global_vars.exp_name}.png',
+                dpi = 300)
     plt.close()
 
 
 def plot_box_ss(ax, conc_mod_obs, mod_pd, obs_pd, with_map=False):
-    """Creates box plot figure of modelled Sea salt concentration .vs. observations"""
+    """
+    Creates box plot figure of modelled Sea salt concentration and observations for all available stations
+    :var ax: matplotlib axes object
+    :var conc_mod_obs: dataframe with SS concentrations from observations and model interpolated results
+    :var mod_pd: list with model interpolated SS concentrations
+    :var obs_pd: list with observations of SS concentrations
+    :param with_map: boolean to determine whether to plot a map in addition to the SS concentration plot
+    :return: None
+    """
 
     font = 10
     my_pal = {"Model": "gray",
@@ -62,7 +91,8 @@ def plot_box_ss(ax, conc_mod_obs, mod_pd, obs_pd, with_map=False):
                         palette=my_pal,)
     ax.legend_.remove()
     ax.yaxis.get_label().set_fontsize(font)
-    ax.tick_params(axis='both', labelsize=font)
+    ax.tick_params(axis='both',
+                   labelsize=font)
 
     handles, labels = pl1.get_legend_handles_labels()
     plt.legend(handles=handles[:2],
@@ -76,7 +106,8 @@ def plot_box_ss(ax, conc_mod_obs, mod_pd, obs_pd, with_map=False):
     ax.set_xlabel('')
     ax.set_ylim([10**-3, 10**1])
 
-    ax.grid(linestyle='--', linewidth=0.4)
+    ax.grid(linestyle='--',
+            linewidth=0.4)
 
     list_stat = ['NAO','CVAO', 'WAP', 'SVD']
     stat_pos = [-0.3, 0.85, 1.85, 2.85]
@@ -97,13 +128,22 @@ def plot_box_ss(ax, conc_mod_obs, mod_pd, obs_pd, with_map=False):
                 formatted_values = (f'\n {np.round(NMB, 2)} ' 
                                      f'\n    {np.round(len(obs), 2)} ')
 
-            ax.text(stat_pos[i], 4, formatted_values, fontsize=6)
+            ax.text(stat_pos[i],
+                    4,
+                    formatted_values,
+                    fontsize=6)
 
 
 def plot_ss(ax, conc_ss, with_map=False):
-    """Prepares the data to plot each station with an additional identifier to indicate to
+    """
+    Prepares the data to plot each station with an additional identifier to indicate to
     which dataset are the SS samples associated. It also computes the statistics and calls
-    the function that creates the SS concentration scatter plot"""
+    the function that creates the SS concentration scatter plot
+    :var ax: matplotlib axes object
+    :var conc_ss: dataframe with SS concentrations from observations and model interpolated results
+    :param with_map: boolean to determine whether to plot a map in addition to the SS concentration plot
+    :return : None
+    """
     new_meas_vals = []
     for i in conc_ss['Measurements'].values:
         i_new = i
