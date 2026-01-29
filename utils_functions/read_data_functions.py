@@ -89,7 +89,7 @@ def read_data(yr, var_names, monthly=False):
     :return: dataframe with data, lists of days, months and years, and dataframe with standard deviation
     """
     data_15_hr = []
-    da_dir = global_vars.main_data_dir+'MH_PMOAseasalt_'+yr+'.csv'
+    da_dir = global_vars.main_data_dir + 'MH_PMOAseasalt_' + yr + '.csv'
     print('Reading data from '+da_dir)
     #da_dir = '/home/manuel/Downloads/'+'MH_PMOAseasalt_'+yr+'.csv'
 
@@ -187,7 +187,7 @@ def read_PMOA_all_stations():
     Read organic aerosols from multiple Arctic stations
     :return: dataframe with monthly averaged values, dictionary with stations metadata and dataframe with monthly std
     """
-    da_dir = global_vars.main_data_dir+'ArcticOA_dataset_PBOA.csv'
+    da_dir = global_vars.main_data_dir + 'ArcticOA_dataset_PBOA.csv'
     data = codecs.open(da_dir, 'r')
     data = pd.read_csv(data, sep=',')
     data_sel = data.copy(deep=True)

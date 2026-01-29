@@ -3,8 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-import global_vars
-import utils_plots
+from utils_functions import utils_plots, global_vars
 import cartopy.crs as ccrs
 
 def function_plot_two_pannel(ax, location, names, ff):
@@ -86,9 +85,9 @@ def box_plot_vert(ax, dict_df, mol_name, lim):
     # The box shows the quartiles of the dataset while the whiskers extend to show the rest of the distribution, except
     # for points that are determined to be “outliers” using a method that is a function of the inter-quartile range.
 
-    utils_plots.add_species_text_name(ax, mol_name[0], 0.3, 4, f-2)
-    utils_plots.add_species_text_name(ax, mol_name[1], 2.9, 4, f-2)
-    utils_plots.add_species_text_name(ax, mol_name[2], 4.63, 4, f-2)
+    utils_plots.add_species_text_name(ax, mol_name[0], 0.3, 4, f - 2)
+    utils_plots.add_species_text_name(ax, mol_name[1], 2.9, 4, f - 2)
+    utils_plots.add_species_text_name(ax, mol_name[2], 4.63, 4, f - 2)
 
 
     stat_pos= [-0.1, 0.9, 1.9, 2.9, 3.85,  4.9]
@@ -165,7 +164,7 @@ def define_df_plot_conc(mix_omf_conc, mac_names, fig_title):
                                       conc_rename_list[2]]),
                            mac_names,
                            [1e-7, 1e1])
-    plt.savefig(f'plots/mixed_conc_{fig_title}_box_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/mixed_conc_{fig_title}_box_{global_vars.exp_name}.png',
                 dpi=300,
                 bbox_inches="tight")
     plt.close()
@@ -209,9 +208,9 @@ def box_plot_vert_only_conc(ax, dict_df, mol_name, lim):
     # The box shows the quartiles of the dataset while the whiskers extend to show the rest of the distribution, except
     # for points that are determined to be “outliers” using a method that is a function of the inter-quartile range.
 
-    utils_plots.add_species_text_name(ax, mol_name[0], 0.3, 4, f-2)
-    utils_plots.add_species_text_name(ax, mol_name[1], 2.9, 4, f-2)
-    utils_plots.add_species_text_name(ax, mol_name[2], 4.63, 4, f-2)
+    utils_plots.add_species_text_name(ax, mol_name[0], 0.3, 4, f - 2)
+    utils_plots.add_species_text_name(ax, mol_name[1], 2.9, 4, f - 2)
+    utils_plots.add_species_text_name(ax, mol_name[2], 4.63, 4, f - 2)
 
 
     stat_pos= [-0.1, 0.9, 1.9, 2.9, 3.85,  4.9]

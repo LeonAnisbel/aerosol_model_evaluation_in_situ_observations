@@ -2,20 +2,18 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import OC_plots, SS_plots, PMOA_plots
-import read_data_functions
-import global_vars
-import utils_plots
+from utils_functions import read_data_functions, utils_plots, global_vars
 import cartopy.crs as ccrs
 import codecs
 
 if __name__ == '__main__':
-    data_dir = "pd_files/"
-    obs_dir = './Observations/'
+    data_dir = "../outputs/"
+    obs_dir = '../Observations/'
 
     with_oc = True   #if False only PMOA should be considered, if True it will compute PMOA+OC
 
     try:
-        os.mkdir('plots')
+        os.mkdir('../plots')
     except OSError:
 
         pass
@@ -146,7 +144,7 @@ if __name__ == '__main__':
     SS_plots.plot_ss(ax,
                      pd.concat(all_conc[:-1]))
     fig.tight_layout()
-    plt.savefig(f'plots/SS_conc_SS submicrom_box_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/SS_conc_SS submicrom_box_{global_vars.exp_name}.png',
                 dpi = 300)
     plt.close()
 
@@ -159,9 +157,9 @@ if __name__ == '__main__':
                              pd.concat([mix_omf_conc[0],
                                         mix_omf_conc[1],
                                         mix_omf_conc[2]]),
-                              mac_names,
+                             mac_names,
                              [1e-7, 1e1])
-    plt.savefig(f'plots/mixed_omf_conc_{fig_title}_box_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/mixed_omf_conc_{fig_title}_box_{global_vars.exp_name}.png',
                 dpi=300,
                 bbox_inches="tight")
     plt.close()
@@ -199,7 +197,7 @@ if __name__ == '__main__':
                                         names,
                                         5)
 
-    plt.savefig(f'plots/SS_conc_SS submicrom_box_map_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/SS_conc_SS submicrom_box_map_{global_vars.exp_name}.png',
                 dpi = 300)
     plt.close()
 

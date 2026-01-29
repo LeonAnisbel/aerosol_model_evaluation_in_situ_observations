@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 import xarray as xr
-import utils_func
-import global_vars
+from utils_functions import utils_func, global_vars
 from datetime import datetime
 
 
@@ -397,7 +396,7 @@ def interp_conc_stations(path, exp, obs, obs_tot, ID):
                                  'conc_mod_pro': conc_model_pro, 'conc_obs_prot_sub': conc_obs_pro,
                                  'conc_obs_ss': conc_obs_ss, 'conc_mod_ss': conc_model_ss, })
 
-        pd_da_18.to_pickle(f'pd_files/prot_conc_{ID}.pkl')
+        pd_da_18.to_pickle(f'../outputs/prot_conc_{ID}.pkl')
 
     return pd_da
 

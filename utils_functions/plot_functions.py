@@ -380,4 +380,4 @@
 #
 #     plt.legend(loc="lower left", fontsize='14')  # bbox_to_anchor=(1.04, 1),
 #
-#     plt.savefig(f'plots/all_final_conc_{title}_box.png', dpi=300, bbox_inches="tight")
+#     plt.savefig(f'../plots/all_final_conc_{title}_box.png', dpi=300, bbox_inches="tight")

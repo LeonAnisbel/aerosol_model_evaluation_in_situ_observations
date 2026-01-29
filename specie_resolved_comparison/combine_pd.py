@@ -1,7 +1,6 @@
-import global_vars
-import plot_functions
+from utils_functions import global_vars
 import pandas as pd
-import numpy as np
+
 
 def create_dataframe(da_pd_nan, mod, obs, mod_ss, obs_ss, mod_oc, obs_oc, mac_na):
     """
@@ -94,4 +93,4 @@ def pd_combine_group(dicc_va, mac_names, mod_key_na, obs_key_na, id_na):
     if id_na == 'poly' or id_na == 'oc':
         conc_pd_new = conc_pd
 
-    conc_pd_new.to_pickle(f'pd_files/{id_na}_conc_{global_vars.exp_name}.pkl')
+    conc_pd_new.to_pickle(f'../outputs/{id_na}_conc_{global_vars.exp_name}.pkl')

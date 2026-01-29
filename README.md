@@ -7,7 +7,7 @@
 
 * Run main.py to perform the interpolation adding "SVD" or "NAO" as argument words to perform the interpolation of lipids and proteins or polysaccharides, respectively. 
  Also "sbatch run_python_main.sh" can be used to run it in levante with "SVD" as default option. 
- This script will create pickle files with the observations and interpolated model data (pd_files/*_conc.pkl) for each biomolecule that can later be used for the plots.
+ This script will create pickle files with the observations and interpolated model data ([outputs](outputs)/*_conc.pkl) for each biomolecule that can later be used for the plots.
 
 
 * global_vars.py contains all global variables
@@ -17,7 +17,7 @@
 
 
 * mixed_box_plots.py will create all relevant figures (as box plots):\
-    -- Box plot of observed and interpolated values of all organic marine aerosol tracers concentration and OMF (PMOA_plots.py). OMF values from observations and interpolated model results (pd_files/*_omf.pkl) are generated within the project [OMF_model_evaluation](https://github.com/LeonAnisbel/OMF_model_evaluation.git).\
+    -- Box plot of observed and interpolated values of all organic marine aerosol tracers concentration and OMF (PMOA_plots.py). OMF values from observations and interpolated model results ([outputs](outputs)/*_omf.pkl) are generated within the project [OMF_model_evaluation](https://github.com/LeonAnisbel/OMF_model_evaluation.git).\
     -- Box plot of observed and interpolated values of sea salt concentration (SS_plots.py file)\
     -- Box plot of observed (OM) and interpolated values of OC (SPMOAoff experiment) concentration and OC+PMOA (SPMOAon experiment) (OC_plots.py file)\
     -- Statistics of this comparison is file statistics.log

@@ -96,7 +96,7 @@ def customize_legend_sv_fig(pl, fig, title):
                fontsize=12)
     fig.tight_layout()
 
-    plt.savefig(f'plots/{title}.png',
+    plt.savefig(f'../plots/{title}.png',
                 dpi = 300)#{title}_{global_vars.exp_name}
     plt.close()
 

@@ -1,4 +1,5 @@
-import global_vars, combine_pd
+from utils_functions import global_vars
+from specie_resolved_comparison import combine_pd
 import pandas as pd
 
 exp = global_vars.exp_name

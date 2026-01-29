@@ -1,7 +1,7 @@
 ##### Import packges
 import sys
-import read_data_functions
-import global_vars, var_executor
+from utils_functions import read_data_functions, global_vars
+import var_executor
 
 
 if __name__ == '__main__':

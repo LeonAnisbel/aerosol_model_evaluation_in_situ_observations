@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
-import global_vars
 import matplotlib.pyplot as plt
-import read_data_functions
+from utils_functions import read_data_functions, global_vars
 
 ff = 12
 omf_var = 'OMF_mod_tot'
@@ -96,7 +95,7 @@ def plot_MC_monthly_seasonality(yr, var_names):
     :param var_names: names of variables to extract from observational data
     :return: None
     """
-    data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
+    data = pd.read_pickle(f'../outputs/MH{yr}_conc_{global_vars.exp_name}.pkl')
     if yr == '0209':
         stat_exp = 'MH_Rinaldi'
         pmoa_name = 'WIOM'
@@ -113,9 +112,9 @@ def plot_MC_monthly_seasonality(yr, var_names):
     data_month_std = []
 
     # Read OMF and add it to plot
-    data_omf_recom = pd.read_pickle(f'pd_files/tot_omf_{stat_exp}.pkl')
-    data_omf_recom_cesm = pd.read_pickle(f'pd_files/fesom_burrows_tot_omf_{stat_exp}.pkl')
-    data_omf_cesm = pd.read_pickle(f'pd_files/burrows_tot_omf_{stat_exp}.pkl')
+    data_omf_recom = pd.read_pickle(f'../outputs/tot_omf_{stat_exp}.pkl')
+    data_omf_recom_cesm = pd.read_pickle(f'../outputs/fesom_burrows_tot_omf_{stat_exp}.pkl')
+    data_omf_cesm = pd.read_pickle(f'../outputs/burrows_tot_omf_{stat_exp}.pkl')
 
     if yr == '0209':
         pd_data = []
@@ -209,7 +208,7 @@ def plot_MC_monthly_seasonality(yr, var_names):
             linewidth=0.4,
             alpha=0.2)
     fig.tight_layout()
-    plt.savefig(f'plots/{stat_exp}{yr}_monthly_OMF_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/{stat_exp}{yr}_monthly_OMF_{global_vars.exp_name}.png',
                 dpi=300)
 
 
@@ -274,7 +273,7 @@ def plot_MC_monthly_seasonality(yr, var_names):
     fig.delaxes(axs[1][0])
 
     fig.tight_layout()
-    plt.savefig(f'plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/MH{yr}_monthly_conc_{global_vars.exp_name}.png',
                 dpi=300)
 
 
@@ -286,7 +285,7 @@ def plot_MC_daily_seasonality(yr, var_names):
     :param var_names: names of variables to extract from observational data
     :return: None
     """
-    data = pd.read_pickle(f'pd_files/MH{yr}_conc_{global_vars.exp_name}.pkl')
+    data = pd.read_pickle(f'../outputs/MH{yr}_conc_{global_vars.exp_name}.pkl')
     fig, ax = plt.subplots(2,
                            1,
                            figsize=(10,5))
@@ -315,7 +314,7 @@ def plot_MC_daily_seasonality(yr, var_names):
     ax[1].set_ylabel('Concentration (ug m$^{-3}$)')
 
     fig.tight_layout()
-    plt.savefig(f'plots/MH{yr}_conc_daily_{global_vars.exp_name}.png')
+    plt.savefig(f'../plots/MH{yr}_conc_daily_{global_vars.exp_name}.png')
 
 
 def plot_all_arctic_stations():
@@ -325,7 +324,7 @@ def plot_all_arctic_stations():
     in main_Arctic.py
     :return: None
     """
-    data = pd.read_pickle(f'pd_files/all_arctic_stations_conc_{global_vars.exp_name}.pkl')
+    data = pd.read_pickle(f'../outputs/all_arctic_stations_conc_{global_vars.exp_name}.pkl')
     data_mo_all_stations, dict_metadata, data_sel_std = read_data_functions.read_PMOA_all_stations()
     stat_list = list(dict_metadata.keys())
 
@@ -359,7 +358,7 @@ def plot_all_arctic_stations():
                              alpha=0.3)
         ax[idx].set_title(sta, loc='center')
     fig.tight_layout()
-    plt.savefig(f'plots/all_arctic_stations_conc_bar_yearly_{global_vars.exp_name}.png')
+    plt.savefig(f'../plots/all_arctic_stations_conc_bar_yearly_{global_vars.exp_name}.png')
     plt.close()
 
     date_list = [str(i) + '-' + str(j) for i, j in zip(data['years'].values, data['months'].values)]
@@ -384,7 +383,7 @@ def plot_all_arctic_stations():
         ax[idx].set_title(sta,
                           loc='center')
     fig.tight_layout()
-    plt.savefig(f'plots/all_arctic_stations_conc_bar_{global_vars.exp_name}.png')
+    plt.savefig(f'../plots/all_arctic_stations_conc_bar_{global_vars.exp_name}.png')
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
@@ -402,7 +401,7 @@ def plot_all_arctic_stations():
 
     fig.legend(handles=obs_leg,
                labels=stat_list)
-    plt.savefig(f'plots/all_arctic_stations_conc_{global_vars.exp_name}.png')
+    plt.savefig(f'../plots/all_arctic_stations_conc_{global_vars.exp_name}.png')
 
 
 def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
@@ -414,7 +413,7 @@ def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
     :param panel_fig: whether to create a figure or plot data on matplotlib axis ax
     :return: None
     """
-    data_moa = pd.read_pickle(f'pd_files/AI{yr}_conc_{global_vars.exp_name}.pkl')
+    data_moa = pd.read_pickle(f'../outputs/AI{yr}_conc_{global_vars.exp_name}.pkl')
 
     if panel_fig:
         ax = ax
@@ -454,7 +453,7 @@ def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
 
     if not panel_fig:
         fig.tight_layout()
-        plt.savefig(f'plots/AI{yr}_monthly_conc_{global_vars.exp_name}.png')
+        plt.savefig(f'../plots/AI{yr}_monthly_conc_{global_vars.exp_name}.png')
         plt.close()
 
         # plot also SS
@@ -481,7 +480,7 @@ def plot_AI_monthly_seasonality(ax, yr, panel_fig=False):
         ax.tick_params(axis='both', labelsize=str(ff))
 
         fig.tight_layout()
-        plt.savefig(f'plots/AI{yr}_monthly_conc_SS_{global_vars.exp_name}.png')
+        plt.savefig(f'../plots/AI{yr}_monthly_conc_SS_{global_vars.exp_name}.png')
         plt.close()
 
 
@@ -501,7 +500,7 @@ if __name__ == '__main__':
     plot_MC_monthly_seasonality(year,
                                 global_vars.yr_exp_var_names[year])
     plot_MC_daily_seasonality(year,
-                                global_vars.yr_exp_var_names[year])
+                              global_vars.yr_exp_var_names[year])
 
     # year = '2015'
     # print('start seasonality at MH', year)

@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import utils_plots
+from utils_functions import utils_plots
+
 
 def plot_text_all_stat(ax, conc_mod_obs, obs_col_na, mod_col_na, font, loc):
     """
@@ -63,16 +64,16 @@ def plot_fit(ax, conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
 
     k = 10
     utils_plots.set_log_ax(ax,
-               [10 ** -3, 10 ** 1],
-               [10 ** -3, 10 ** 1],
-              "-",)
+                           [10 ** -3, 10 ** 1],
+                           [10 ** -3, 10 ** 1],
+              "-", )
     utils_plots.set_log_ax(ax,
-               [10 ** -3 , 10 ** 1],
-               [10 ** -3*k, 10 ** 1 * k],
+                           [10 ** -3 , 10 ** 1],
+                           [10 ** -3*k, 10 ** 1 * k],
            ":")
     utils_plots.set_log_ax(ax,
-              [10 ** -3, 10 ** 1] ,
-              [10 ** -3/k, 10 ** 1 / k],
+                           [10 ** -3, 10 ** 1],
+                           [10 ** -3/k, 10 ** 1 / k],
                 ":")
 
     return pl
@@ -108,7 +109,7 @@ def plot_box(ax, conc_mod_obs, col_na, yli, title, label, pos, font, right_panne
                                       title + '|OM$_{aer}$',
                                       pos,
                                       4,
-                                      font-2)
+                                      font - 2)
 
     ax.tick_params(axis='both',
                    labelsize=font)
@@ -187,7 +188,7 @@ def plot_oc(conc, ti, no_stat=False):
                 mod_oc = np.array(conc_loc[conc_loc['']=='Model'][old_cols].values)
                 obs_oc = np.array(conc_loc[conc_loc['']=='Observation'][old_cols].values)
 
-                RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs_oc,mod_oc)
+                RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs_oc, mod_oc)
                 if i == 0:
                     formatted_pvalues = (f'RMSE= {np.round(RMSE, 2)} '
                                          f'\n MB= {np.round(mean_bias, 2)} '
@@ -216,7 +217,7 @@ def plot_oc(conc, ti, no_stat=False):
 
     utils_plots.customize_legend_sv_fig(pl1,
                                         fig1,
-                                        ti+'box_panel_plot')
+                                        ti +'box_panel_plot')
 
 
     fig2, axs2 = plt.subplots(1,
@@ -239,5 +240,5 @@ def plot_oc(conc, ti, no_stat=False):
                  [0.0002, 1.2])
     utils_plots.customize_legend_sv_fig(pl2,
                                         fig2,
-                                        ti+'scatter_panel_plot')
+                                        ti +'scatter_panel_plot')
 

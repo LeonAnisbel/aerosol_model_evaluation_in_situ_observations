@@ -1,8 +1,7 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import global_vars
-import utils_plots
+from utils_functions import utils_plots, global_vars
 
 
 def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
@@ -37,7 +36,7 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
     obs = np.array(conc_mod_obs[obs_col_na].values)
     mod = np.array(conc_mod_obs[mod_col_na].values)
 
-    RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs,mod)
+    RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs, mod)
     formatted_pvalues = (f'RMSE= {np.round(RMSE, 2)} \n bias= {np.round(mean_bias, 2)} '
                          f'\n R= {np.round(R, 2)}', f'\n pval= {np.round(pval, 2)}')
     print('SEA SALT STATISTICS', formatted_pvalues)
@@ -55,7 +54,7 @@ def plot_fit(conc_mod_obs, obs_col_na, mod_col_na, title, xli, yli, loc):
             linewidth=0.4)
     fig.tight_layout()
 
-    plt.savefig(f'plots/SS_conc_{title}_scatter_{global_vars.exp_name}.png',
+    plt.savefig(f'../plots/SS_conc_{title}_scatter_{global_vars.exp_name}.png',
                 dpi = 300)
     plt.close()
 
@@ -118,7 +117,7 @@ def plot_box_ss(ax, conc_mod_obs, mod_pd, obs_pd, with_map=False):
             obs = obs_pd[obs_pd['Measurements_renamed']==stat]
 
             RMSE, mean_bias, NMB, R, pval = utils_plots.get_stat(obs['Aerosol Concentration (µg m$^{-3}$)'].values,
-                                                     mod['Aerosol Concentration (µg m$^{-3}$)'].values)
+                                                                 mod['Aerosol Concentration (µg m$^{-3}$)'].values)
 
             print( 'SS statistics \n',   stat, 'RMSE',  RMSE,'MB',  mean_bias, 'NMB',  NMB)
             if i == 0:
