@@ -125,7 +125,6 @@ if __name__ == '__main__':
                              no_stat=True) # Thesis plot
 
 ############################################################################
-
         conc_rename = utils_plots.rename_func(conc,
                                               '',
                                               'Model',
@@ -150,6 +149,9 @@ if __name__ == '__main__':
     plt.savefig(f'plots/SS_conc_SS submicrom_box_{global_vars.exp_name}.png',
                 dpi = 300)
     plt.close()
+
+    # Create box plot with aerosol concentration comparison only (for PhD Defense)
+    PMOA_plots.define_df_plot_conc(mix_omf_conc, mac_names, fig_title)
 
     # Create box plot fig with omf and organic aerosol concentration for all species and stations (Leon-Marcos et al. 2025)
     fig, ax = plt.subplots(figsize=(13,8))#15, 8
